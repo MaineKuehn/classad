@@ -6,5 +6,8 @@ build-backend = "flit.buildapi"
 module = "classad"
 author = "Eileen Kuehn, Max Fischer"
 author-email = "mainekuehn@gmail.com"
+home-page = "https://github.com/MaineKuehn/classad"
+description-file = "README.rst"
+keywords = "htcondor classad python"
 classifiers = ["License :: OSI Approved :: MIT License"]
 
