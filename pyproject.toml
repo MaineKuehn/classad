@@ -14,6 +14,8 @@ classifiers = ["License :: OSI Approved :: MIT License"]
 [tool.flit.metadata.requires-extra]
 test = [
     "pytest >=4.3.0",
+    "flake8",
+    "flake8-bugbear",
 ]
 doc = ["sphinx", "sphinx_rtd_theme", "sphinxcontrib-contentui"]
 
