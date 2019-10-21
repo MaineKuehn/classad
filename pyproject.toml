@@ -11,3 +11,8 @@ description-file = "README.rst"
 keywords = "htcondor classad python"
 classifiers = ["License :: OSI Approved :: MIT License"]
 
+[tool.flit.metadata.requires-extra]
+doc = ["sphinx", "sphinx_rtd_theme", "sphinxcontrib-contentui"]
+
+[tool.flit.metadata.urls]
+Documentation = "https://classad.readthedocs.io/en/latest/"
