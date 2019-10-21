@@ -18,6 +18,7 @@ test = [
     "flake8-bugbear",
 ]
 doc = ["sphinx", "sphinx_rtd_theme", "sphinxcontrib-contentui"]
+dev = ["pre-commit"]
 
 [tool.flit.metadata.urls]
 Documentation = "https://classad.readthedocs.io/en/latest/"
