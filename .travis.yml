@@ -6,10 +6,6 @@ python:
   - "pypy3"
 os:
   - linux
-env:
-  - USIM_WAITQUEUE="" DEBUG="-O"
-  - USIM_WAITQUEUE=""
-  - USIM_WAITQUEUE="SD"
 before_script:
   - python -m pip install pip --upgrade
   - python -m pip list
