@@ -12,6 +12,9 @@ keywords = "htcondor classad python"
 classifiers = ["License :: OSI Approved :: MIT License"]
 
 [tool.flit.metadata.requires-extra]
+test = [
+    "pytest >=4.3.0",
+]
 doc = ["sphinx", "sphinx_rtd_theme", "sphinxcontrib-contentui"]
 
 [tool.flit.metadata.urls]
