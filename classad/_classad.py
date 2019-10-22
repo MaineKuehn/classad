@@ -12,7 +12,16 @@ class ClassAd(MutableMapping):
         self._data = OrderedDict()
 
     def __setitem__(self, key: _KT, value: _VT) -> None:
+        """
+        Keynames that are reserved and, therefore, cannot be used: error, false, is,
+            isnt, parent, true, undefined
+        :param key:
+        :param value:
+        :return:
+        """
         key = key.casefold()
+        if key in ["error", "false", "is", "isnt", "parent", "true", "undefined"]:
+            raise TypeError
         self._data[key] = value
 
     def __delitem__(self, key: _KT) -> None:
