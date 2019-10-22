@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from collections.abc import MutableMapping
 from typing import Iterator, _T_co, _KT, _VT_co, _VT, Any
 
@@ -8,7 +9,7 @@ class ClassAd(MutableMapping):
     __slots__ = "_data"
 
     def __init__(self):
-        self._data = {}
+        self._data = OrderedDict()
 
     def __setitem__(self, key: _KT, value: _VT) -> None:
         key = key.casefold()
