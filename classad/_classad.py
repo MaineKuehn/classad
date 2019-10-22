@@ -1,7 +1,7 @@
 from collections.abc import MutableMapping
-from typing import Iterator, _T_co, _KT, _VT_co, _VT, Optional
+from typing import Iterator, _T_co, _KT, _VT_co, _VT, Any
 
-from classad._primitives import Undefined, Error
+from classad._primitives import Undefined
 
 
 class ClassAd(MutableMapping):
@@ -26,7 +26,7 @@ class ClassAd(MutableMapping):
     def __iter__(self) -> Iterator[_T_co]:
         return iter(self._data)
 
-    def evaluate(self, key: _KT, target: "ClassAd") -> Optional[bool, Undefined, Error]:
+    def evaluate(self, key: _KT, target: "ClassAd") -> Any:
         """
         Perform a matchmaking between an expression defined by the named attribute
         key in the context of the target ClassAd.
