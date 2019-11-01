@@ -50,7 +50,7 @@ def eval(expression: literal_type) -> literal_type:
     result of evaluating the contents of the string as a :py:class:`~.ClassAd`
     expression.
     """
-    if isinstance(expression, (float, int)):
+    if isinstance(expression, (float, py_int, Undefined, Error)):
         return expression
     raise NotImplementedError
 
@@ -168,7 +168,7 @@ def isInteger(expression: literal_type) -> Union[bool, Error]:
     argument is given.
     """
     result = eval(expression)
-    if isinstance(result, type(int)):
+    if isinstance(result, py_int):
         return True
     return False
 
@@ -348,7 +348,7 @@ def pow(base, exponent):
     ``1.0``, type appropriate.
     """
     result = math.pow(base, exponent)
-    if exponent >= 0 and isinstance(exponent, int) and isinstance(base, int):
+    if exponent >= 0 and isinstance(exponent, py_int) and isinstance(base, py_int):
         return py_int(result)
     return result
 
@@ -457,7 +457,7 @@ def random(expression: literal_type = 1.0) -> Union[number, Error]:
     is given.
     """
     result = eval(expression)
-    if isinstance(result, int):
+    if isinstance(result, py_int):
         return py_random.randint(0, result)
     elif isinstance(result, float):
         return py_random.uniform(0, result)
