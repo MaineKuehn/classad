@@ -1,9 +1,10 @@
 """
 This module defines internal functions as defined in the classad specification
-in the HTCondor Manual at
-https://htcondor.readthedocs.io/en/stable/misc-concepts/classad-mechanism.html.
-Some of the functions defined in the specification in
-https://research.cs.wisc.edu/htcondor/classad/refman/node4.html#SECTION00043900000000000000
+in the `HTCondor Manual <https://htcondor.readthedocs.io/en/stable/misc-concepts/
+classad-mechanism.html>`_.
+Some of the functions defined in the `official specification
+<https://research.cs.wisc.edu/htcondor/classad/refman/node4.html#
+SECTION00043900000000000000>`_
 are excluded as those are not listed in the HTCondor Manual, those include
 
 * isClassad(a: "Expression") -> bool: ...
