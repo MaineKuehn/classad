@@ -95,7 +95,7 @@ def ifThenElse(
     pass
 
 
-def isUndefined(expression: literal_type) -> bool:
+def isUndefined(expression: literal_type) -> Union[bool, Error]:
     """
     Returns :py:data:`True`, if :py:attr:`expression` evaluates to
     :py:class:`~.Undefined`. Returns :py:data:`False` in all other cases.
@@ -106,7 +106,7 @@ def isUndefined(expression: literal_type) -> bool:
     raise NotImplementedError
 
 
-def isError(expression: literal_type) -> bool:
+def isError(expression: literal_type) -> Union[bool, Error]:
     """
     Returns :py:data:`True` if :py:attr:`expression` evaluates to :py:class:`~.Error`.
     Returns :py:data:`False` in all other cases.
@@ -117,7 +117,7 @@ def isError(expression: literal_type) -> bool:
     raise NotImplementedError
 
 
-def isString(expression: literal_type) -> bool:
+def isString(expression: literal_type) -> Union[bool, Error]:
     """
     Returns :py:data:`True` if :py:attr:`expression` evaluates to a :py:class:`str`.
     Returns :py:data:`False` in all other cases.
@@ -128,7 +128,7 @@ def isString(expression: literal_type) -> bool:
     raise NotImplementedError
 
 
-def isInteger(expression: literal_type) -> bool:
+def isInteger(expression: literal_type) -> Union[bool, Error]:
     """
     Returns :py:data:`True` if :py:attr:`expression` evaluates to an :py:class:`int`.
     Returns :py:data:`False` in all other cases.
@@ -139,7 +139,7 @@ def isInteger(expression: literal_type) -> bool:
     raise NotImplementedError
 
 
-def isReal(expression: literal_type) -> bool:
+def isReal(expression: literal_type) -> Union[bool, Error]:
     """
     Returns :py:data:`True` if :py:attr:`expression` evaluates to  a :py:class:`float`.
     Returns :py:data:`False` in all other cases.
@@ -150,7 +150,7 @@ def isReal(expression: literal_type) -> bool:
     raise NotImplementedError
 
 
-def isBoolean(expression: literal_type) -> bool:
+def isBoolean(expression: literal_type) -> Union[bool, Error]:
     """
     Returns :py:data:`True` if :py:attr:`expression` evaluates to a :py:class:`bool`.
     Returns :py:data:`False` in all other cases.
@@ -161,7 +161,7 @@ def isBoolean(expression: literal_type) -> bool:
     raise NotImplementedError
 
 
-def int(expression: literal_type) -> int:
+def int(expression: literal_type) -> Union[int, Error]:
     """
     Returns the integer value defined by :py:attr:`expression`.
     If the type of the evaluated :py:attr:`expression` is :py:class:`float`,
@@ -178,7 +178,7 @@ def int(expression: literal_type) -> int:
     raise NotImplementedError
 
 
-def real(expression: literal_type) -> float:
+def real(expression: literal_type) -> Union[float, Error]:
     """
     Returns the :py:class:`flaot` value defined by :py:attr:`expression`.
     If the type of the evaluated :py:attr:`expression` is :py:class:`int`, the
@@ -195,7 +195,7 @@ def real(expression: literal_type) -> float:
     raise NotImplementedError
 
 
-def string(expression: literal_type) -> str:
+def string(expression: literal_type) -> Union[str, Error]:
     """
     Returns the string that results from evaluating :py:attr:`expression`.
     A non-string value is converted to a string.
@@ -208,7 +208,7 @@ def string(expression: literal_type) -> str:
     raise NotImplementedError
 
 
-def floor(expression: literal_type) -> int:
+def floor(expression: literal_type) -> Union[int, Error]:
     """
     Returns the integer that results from evaluating :py:attr:`expression`, if
     the type of the evaluated :py:attr:`expression` is :py:class:`int`.
@@ -224,7 +224,7 @@ def floor(expression: literal_type) -> int:
     raise NotImplementedError
 
 
-def ceiling(a: literal_type) -> int:
+def ceiling(expression: literal_type) -> Union[int, Error]:
     """
     Returns the integer that results from evaluating :py:attr:`expression`, if
     the type of the evaluated :py:attr:`expression` is :py:class:`int`.
@@ -237,7 +237,7 @@ def ceiling(a: literal_type) -> int:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    return math.ceil(a)
+    return math.ceil(expression)
 
 
 @overload
@@ -335,7 +335,7 @@ def quantize(a, b):
         return ceiling(quotient) * b
 
 
-def round(expression: literal_type) -> int:
+def round(expression: literal_type) -> Union[int, Error]:
     """
     Returns the integer that results from the evaluation of :py:attr:`expression`,
     if the type of the evaluated :py:attr:`expression` is :py:class:`int`.
@@ -354,7 +354,7 @@ def round(expression: literal_type) -> int:
     raise NotImplementedError
 
 
-def random(expression: literal_type = 1.0) -> number:
+def random(expression: literal_type = 1.0) -> Union[number, Error]:
     """
     If the optional argument :py:attr:`expression` evaluates to type :py:class:`int`
     or :py:class:`float` called ``x``, the return value is the integer or float ``r``
@@ -368,7 +368,7 @@ def random(expression: literal_type = 1.0) -> number:
     raise NotImplementedError
 
 
-def strcat(expression: literal_type, *args: literal_type) -> str:
+def strcat(expression: literal_type, *args: literal_type) -> Union[str, Error]:
     """
     Returns the string which is the concatenation of all arguments, where all
     arguments are converted to type :py:class:`str` by function :py:func:`~.string`.
@@ -379,17 +379,17 @@ def strcat(expression: literal_type, *args: literal_type) -> str:
 
 
 @overload
-def join(seperator: str, *args: literal_type) -> str:
+def join(seperator: str, *args: literal_type) -> Union[str, Error]:
     ...
 
 
 @overload
-def join(seperator: str, arguments: List) -> str:
+def join(seperator: str, arguments: List) -> Union[str, Error]:
     ...
 
 
 @overload
-def join(arguments: List) -> str:
+def join(arguments: List) -> Union[str, Error]:
     ...
 
 
@@ -419,7 +419,7 @@ def join(*args):
     pass
 
 
-def substr(s: str, offset: int, length: Optional[int] = None) -> str:
+def substr(s: str, offset: int, length: Optional[int] = None) -> Union[str, Error]:
     """
     Returns the substring of :py:attr:`s`, from the position indicated by
     :py:attr:`offset`, with (optional) :py:attr:`length` characters. The first
@@ -441,7 +441,7 @@ def substr(s: str, offset: int, length: Optional[int] = None) -> str:
     raise NotImplementedError
 
 
-def strcmp(a: literal_type, b: literal_type) -> int:
+def strcmp(a: literal_type, b: literal_type) -> Union[int, Error]:
     """
     Both arguments are converted to :py:class:`str` by function :py:func:`~.string`.
     The return value is an integer that will be
@@ -464,7 +464,7 @@ def strcmp(a: literal_type, b: literal_type) -> int:
     raise NotImplementedError
 
 
-def stricmp(a: literal_type, b: literal_type) -> int:
+def stricmp(a: literal_type, b: literal_type) -> Union[int, Error]:
     """
     This function is the same as :py:func:`~.strcmp`, except that letter case is
     not significant.
@@ -476,7 +476,7 @@ def stricmp(a: literal_type, b: literal_type) -> int:
     raise NotImplementedError
 
 
-def toUpper(s: literal_type) -> str:
+def toUpper(s: literal_type) -> Union[str, Error]:
     """
     The single argument :py:attr:`s` is converted to type :py:class:`str` by
     function :py:func:`~.string`. The return value is this string, with all lower
@@ -490,7 +490,7 @@ def toUpper(s: literal_type) -> str:
     raise NotImplementedError
 
 
-def toLower(s: literal_type) -> str:
+def toLower(s: literal_type) -> Union[str, Error]:
     """
     The single argument :py:attr:`s` is converted to type :py:class:`str` by
     function :py:func:`~.string`. The return value is this string, with all upper
@@ -504,7 +504,7 @@ def toLower(s: literal_type) -> str:
     raise NotImplementedError
 
 
-def size(expression: literal_type) -> int:
+def size(expression: literal_type) -> Union[int, Error]:
     """
     Returns the number of characters in the string, after calling function
     :py:func:`~.string`. If the argument evaluates to :py:class:`~.Error` or
@@ -702,7 +702,7 @@ def mergeEnvironment(env: str, *args: str) -> str:
     raise NotImplementedError
 
 
-def stringListSize(string_list: str, delimiter: Optional[str]):
+def stringListSize(string_list: str, delimiter: Optional[str]) -> Union[int, Error]:
     """
     Returns the number of elements in the string :py:attr:`string_list`, as
     delimited by the optional :py:attr:`delimiter` string. Returns
@@ -721,12 +721,16 @@ def stringListSize(string_list: str, delimiter: Optional[str]):
 
 
 @overload
-def stringListSum(string_list: str, delimiter: Optional[str] = None) -> int:
+def stringListSum(
+    string_list: str, delimiter: Optional[str] = None
+) -> Union[int, Error]:
     ...
 
 
 @overload
-def stringListSum(string_list: str, delimiter: Optional[str] = None) -> float:
+def stringListSum(
+    string_list: str, delimiter: Optional[str] = None
+) -> Union[float, Error]:
     ...
 
 
@@ -765,7 +769,9 @@ def stringListAvg(string_list: str, delimiter: Optional[str] = None) -> float:
     raise NotImplementedError
 
 
-def stringListMin(string_list: str, delimiter: Optional[str] = None) -> number:
+def stringListMin(
+    string_list: str, delimiter: Optional[str] = None
+) -> Union[number, Error, Undefined]:
     """
     Finds and returns the minimum value from all items in the string
     :py:attr:`string_list`, as delimited by the optional :py:attr:`delimiter` string.
@@ -785,7 +791,9 @@ def stringListMin(string_list: str, delimiter: Optional[str] = None) -> number:
     raise NotImplementedError
 
 
-def stringListMax(string_list: str, delimiter: Optional[str] = None) -> number:
+def stringListMax(
+    string_list: str, delimiter: Optional[str] = None
+) -> Union[number, Error, Undefined]:
     """
     Finds and returns the maximum value from all items in the string
     :py:attr:`string_list`, as delimited by the optional :py:attr:`delimiter` string.
@@ -805,7 +813,9 @@ def stringListMax(string_list: str, delimiter: Optional[str] = None) -> number:
     raise NotImplementedError
 
 
-def stringListMember(x: str, string_list: str, delimiter: Optional[str] = None) -> bool:
+def stringListMember(
+    x: str, string_list: str, delimiter: Optional[str] = None
+) -> Union[bool, Error]:
     """
     Returns :py:data:`True` if item :py:attr:`x` is in the string
     :py:attr:`string_list`, as delimited by the optional :py:attr:`delimiter`
@@ -825,7 +835,7 @@ def stringListMember(x: str, string_list: str, delimiter: Optional[str] = None) 
 
 def stringListIMember(
     x: str, string_list: str, delimiter: Optional[str] = None
-) -> bool:
+) -> Union[bool, Error]:
     """
     Same as :py:func:`~.stringListMember`, but comparison is done with
     :py:func:`~.stricmp`, so letter case is not relevant.
@@ -841,7 +851,7 @@ def stringListIMember(
 
 def stringListsIntersect(
     list_a: str, list_b: str, delimiter: Optional[str] = None
-) -> int:
+) -> Union[int, Error]:
     """
     Returns :py:data:`True` if the lists contain any matching elements, and
     returns :py:data:`False` if the lists do not contain any matching elements.
@@ -857,7 +867,9 @@ def stringListsIntersect(
     raise NotImplementedError
 
 
-def regexp(pattern: str, target: str, options: Optional[str] = None) -> bool:
+def regexp(
+    pattern: str, target: str, options: Optional[str] = None
+) -> Union[bool, Error]:
     """
     Uses the description of a regular expression given by string
     :py:attr:`pattern` to scan through the string :py:attr:`target`.
@@ -887,7 +899,7 @@ def regexp(pattern: str, target: str, options: Optional[str] = None) -> bool:
 
 def regexps(
     pattern: str, target: str, substitute: str, options: Optional[str] = None
-) -> str:
+) -> Union[str, Error]:
     """
     Uses the description of a regular expression given by string
     :py:attr:`pattern` to scan through the string :py:attr:`target`.
@@ -919,7 +931,7 @@ def stringList_regexpMember(
     string_list: str,
     delimiter: Optional[str] = None,
     options: Optional[str] = None,
-) -> bool:
+) -> Union[bool, Error]:
     """
     Uses the description of a regular expression given by string
     :py:attr:`pattern` to scan through the list of strings in :py:attr:`string_list`.
@@ -971,7 +983,9 @@ def userMap(mapSetName: str, userName: str) -> List:
 
 
 @overload
-def userMap(mapSetName: str, userName: str, preferredGroup: str) -> str:
+def userMap(
+    mapSetName: str, userName: str, preferredGroup: str
+) -> Union[str, Undefined]:
     """
     Map an input string using the given mapping set. Returns a string, which is
     the preferred group if the user is in that group; otherwise it is the first
