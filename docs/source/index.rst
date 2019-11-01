@@ -10,6 +10,7 @@ Welcome to classad's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   functions
 
 
 Indices and tables
