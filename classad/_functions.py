@@ -115,7 +115,6 @@ def ifThenElse(
         return eval(then_expression)
     elif not result:  # false and zero floats
         return eval(else_expression)
-    raise NotImplementedError
 
 
 def isUndefined(expression: literal_type) -> Union[bool, Error]:
@@ -290,12 +289,11 @@ def floor(expression: literal_type) -> Union[int, Error]:
     result = eval(expression)
     if isInteger(result):
         return result
-    else:
-        result = real(result)
-        if isError(result) or isUndefined(result):
-            return Error()
-        else:
-            return math.floor(result)
+    result = real(result)
+    try:
+        return math.floor(result)
+    except TypeError:
+        pass
     return Error()
 
 
@@ -315,12 +313,11 @@ def ceiling(expression: literal_type) -> Union[int, Error]:
     result = eval(expression)
     if isInteger(result):
         return result
-    else:
-        result = real(result)
-        if isError(result) or isUndefined(result):
-            return Error()
-        else:
-            return math.ceil(result)
+    result = real(result)
+    try:
+        return math.ceil(result)
+    except TypeError:
+        pass
     return Error()
 
 
