@@ -20,7 +20,7 @@ class ClassAd(MutableMapping):
         """
         key = key.casefold()
         if key in ["error", "false", "is", "isnt", "parent", "true", "undefined"]:
-            raise ValueError(f'{key} is a reserved name')
+            raise ValueError(f"{key} is a reserved name")
         self._data[key] = value
 
     def __delitem__(self, key: str) -> None:
