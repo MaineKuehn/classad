@@ -25,9 +25,17 @@ are excluded as those are not listed in the HTCondor Manual, those include
 * relTime(t: literal_type) -> RelTime: ...
 * splitTime(time: Union[RelTime, AbsTime]) -> ClassAd: ...
 * formatTime(t: Union[AbsTime, int], s: str) -> str: ...
+
+.. TODO::
+
+    General check for number of attributes defined is currently not supported
+    by the given functions below. We should maybe consider overriding all functions
+    and having the general function with `*args`.
 """
 import math
+import random as py_random
 from typing import TypeVar, List, Union, overload, Optional
+from builtins import int as py_int
 
 from classad._primitives import Attribute, Undefined, Error
 
@@ -42,6 +50,8 @@ def eval(expression: literal_type) -> literal_type:
     result of evaluating the contents of the string as a :py:class:`~.ClassAd`
     expression.
     """
+    if isinstance(expression, (float, int)):
+        return expression
     raise NotImplementedError
 
 
@@ -91,8 +101,21 @@ def ifThenElse(
 
     This function returns :py:class:`~.Error` if other than exactly ``3``
     arguments are given.
+
+    .. TODO::
+
+        What about int?
     """
-    pass
+    result = eval(if_expression)
+    if isinstance(result, (str, Error)):
+        return Error()
+    if isinstance(result, Undefined):
+        return Undefined()
+    if result:  # true and non-zero floats
+        return eval(then_expression)
+    elif not result:  # false and zero floats
+        return eval(else_expression)
+    raise NotImplementedError
 
 
 def isUndefined(expression: literal_type) -> Union[bool, Error]:
@@ -103,7 +126,10 @@ def isUndefined(expression: literal_type) -> Union[bool, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isinstance(result, Undefined):
+        return True
+    return False
 
 
 def isError(expression: literal_type) -> Union[bool, Error]:
@@ -114,7 +140,10 @@ def isError(expression: literal_type) -> Union[bool, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isinstance(result, Error):
+        return True
+    return False
 
 
 def isString(expression: literal_type) -> Union[bool, Error]:
@@ -125,7 +154,10 @@ def isString(expression: literal_type) -> Union[bool, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isinstance(result, str):
+        return True
+    return False
 
 
 def isInteger(expression: literal_type) -> Union[bool, Error]:
@@ -136,7 +168,10 @@ def isInteger(expression: literal_type) -> Union[bool, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isinstance(result, type(int)):
+        return True
+    return False
 
 
 def isReal(expression: literal_type) -> Union[bool, Error]:
@@ -147,7 +182,10 @@ def isReal(expression: literal_type) -> Union[bool, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isinstance(result, float):
+        return True
+    return False
 
 
 def isBoolean(expression: literal_type) -> Union[bool, Error]:
@@ -158,7 +196,10 @@ def isBoolean(expression: literal_type) -> Union[bool, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isinstance(result, bool):
+        return True
+    return False
 
 
 def int(expression: literal_type) -> Union[int, Error]:
@@ -175,12 +216,22 @@ def int(expression: literal_type) -> Union[int, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isInteger(result):
+        return result
+    elif isReal(result):
+        return math.trunc(result)
+    elif isString(result):
+        try:
+            return py_int(result)
+        except ValueError:
+            pass
+    return Error()
 
 
 def real(expression: literal_type) -> Union[float, Error]:
     """
-    Returns the :py:class:`flaot` value defined by :py:attr:`expression`.
+    Returns the :py:class:`float` value defined by :py:attr:`expression`.
     If the type of the evaluated :py:attr:`expression` is :py:class:`int`, the
     return value is the converted integer.
     If the type of the evaluated :py:attr:`expression` is :py:class:`str`, the
@@ -192,7 +243,17 @@ def real(expression: literal_type) -> Union[float, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isReal(result):
+        return result
+    elif isInteger(result):
+        return float(result)
+    elif isString(result):
+        try:
+            return float(result)
+        except ValueError:
+            pass
+    return Error()
 
 
 def string(expression: literal_type) -> Union[str, Error]:
@@ -205,7 +266,12 @@ def string(expression: literal_type) -> Union[str, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isString(result):
+        return result
+    elif isUndefined(result) or isError(result):
+        return Error()
+    return str(result)
 
 
 def floor(expression: literal_type) -> Union[int, Error]:
@@ -221,7 +287,16 @@ def floor(expression: literal_type) -> Union[int, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isInteger(result):
+        return result
+    else:
+        result = real(result)
+        if isError(result) or isUndefined(result):
+            return Error()
+        else:
+            return math.floor(result)
+    return Error()
 
 
 def ceiling(expression: literal_type) -> Union[int, Error]:
@@ -237,7 +312,16 @@ def ceiling(expression: literal_type) -> Union[int, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    return math.ceil(expression)
+    result = eval(expression)
+    if isInteger(result):
+        return result
+    else:
+        result = real(result)
+        if isError(result) or isUndefined(result):
+            return Error()
+        else:
+            return math.ceil(result)
+    return Error()
 
 
 @overload
@@ -266,7 +350,10 @@ def pow(base, exponent):
     value of ``base``, including ``0`` or ``0.0``returns the value ``1`` or
     ``1.0``, type appropriate.
     """
-    raise NotImplementedError
+    result = math.pow(base, exponent)
+    if exponent >= 0 and isinstance(exponent, int) and isinstance(base, int):
+        return py_int(result)
+    return result
 
 
 @overload
@@ -351,7 +438,14 @@ def round(expression: literal_type) -> Union[int, Error]:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isInteger(result):
+        return result
+    else:
+        result = real(result)
+        if isReal(result):
+            return round(result)
+    return Error()
 
 
 def random(expression: literal_type = 1.0) -> Union[number, Error]:
@@ -365,7 +459,12 @@ def random(expression: literal_type = 1.0) -> Union[number, Error]:
     This function returns :py:class:`~.Error` if greater than ``1`` argument
     is given.
     """
-    raise NotImplementedError
+    result = eval(expression)
+    if isinstance(result, int):
+        return py_random.randint(0, result)
+    elif isinstance(result, float):
+        return py_random.uniform(0, result)
+    return Error()
 
 
 def strcat(expression: literal_type, *args: literal_type) -> Union[str, Error]:
@@ -405,7 +504,7 @@ def join(*args):
     If there is only one argument, and the argument is a list, all members of
     the list are converted to strings and then concatenated.
 
-    Resturns :py:class:`~.Error` if any arguemnt evaluates to :py:class:`~Undefined`
+    Resturns :py:class:`~.Error` if any argument evaluates to :py:class:`~Undefined`
     or :py:class:`~.Error`.
 
     For example:
