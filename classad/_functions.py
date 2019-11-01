@@ -26,7 +26,7 @@ are excluded as those are not listed in the HTCondor Manual, those include
 * splitTime(time: Union[RelTime, AbsTime]) -> ClassAd: ...
 * formatTime(t: Union[AbsTime, int], s: str) -> str: ...
 """
-
+import math
 from typing import TypeVar, List, Union, overload, Optional
 
 from classad._primitives import Attribute, Undefined, Error
@@ -237,7 +237,7 @@ def ceiling(a: literal_type) -> int:
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given.
     """
-    raise NotImplementedError
+    return math.ceil(a)
 
 
 @overload
@@ -319,7 +319,20 @@ def quantize(a, b):
         3.0   = quantize(2.7, {1, 2, 0.5})
         ERROR = quantize(3, {1, 2, "A"})
     """
-    raise NotImplementedError
+    if isinstance(b, list):
+        for element in b:
+            try:
+                if element >= a:
+                    return element
+            except TypeError:
+                return Error()
+        return quantize(a, element)
+    else:
+        try:
+            quotient = a / b
+        except TypeError:
+            return Error()
+        return ceiling(quotient) * b
 
 
 def round(expression: literal_type) -> int:
