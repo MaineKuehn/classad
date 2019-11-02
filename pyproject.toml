@@ -10,6 +10,9 @@ home-page = "https://github.com/MaineKuehn/classad"
 description-file = "README.rst"
 keywords = "htcondor classad python"
 classifiers = ["License :: OSI Approved :: MIT License"]
+requires = [
+    "pyparsing"
+]
 
 [tool.flit.metadata.requires-extra]
 test = [
