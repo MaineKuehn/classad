@@ -1,5 +1,6 @@
 import pyparsing as pp
 
+pp.ParserElement.enablePackrat()
 
 SQUOTE = pp.Suppress("'")
 DQUOTE = pp.Suppress('"')
