@@ -512,7 +512,11 @@ def join(*args):
         "abc"     = join(split("a b c"))
         "a;b;c"   = join(";", split("a b c"))
     """
-    pass
+    if len(args) == 1:
+        return "".join(args[0])
+    if len(args) == 2 and isinstance(args[1], list):
+        return args[0].join(args[1])
+    return args[0].join(args[1:])
 
 
 def substr(s: str, offset: int, length: Optional[int] = None) -> Union[str, Error]:
