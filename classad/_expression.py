@@ -24,6 +24,9 @@ class Expression:
     def __repr__(self):
         return f"<{self.__class__.__name__}>: {self._expression}"
 
+    def __eq__(self, other):
+        raise TypeError
+
 
 class FunctionExpression(Expression):
     pass
@@ -42,7 +45,10 @@ class ArithmeticExpression(Expression):
         "<": operator.lt,
         "<=": operator.le,
         "=>": operator.ge,
-        ">": operator.gt
+        ">": operator.gt,
+        "==": operator.eq,
+        "&&": operator.and_,
+        "||": operator.or_
     }
 
     @classmethod
