@@ -2,7 +2,8 @@ import operator
 import pyparsing as pp
 from typing import Any
 
-from classad._classad import ClassAd
+from . import _functions
+from ._classad import ClassAd
 
 
 def evaluate_isnt_operator(a, b):
@@ -35,7 +36,29 @@ class Expression:
 
 
 class FunctionExpression(Expression):
-    pass
+    def __init__(self, name, args):
+        super().__init__()
+        self._name = name
+        self._expression = args
+
+    def evaluate(self, my: ClassAd, target: ClassAd) -> Any:
+        print(f"{self._name}: {self._expression}")
+        expression = []
+        for element in self._expression:
+            if isinstance(element, Expression):
+                expression.append(element.evaluate(my, target))
+            else:
+                expression.append(element)
+        print(f"calling with {expression}")
+        return getattr(_functions, self._name)(*expression)
+
+    @classmethod
+    def from_grammar(cls, tokens):
+        print(f"received {tokens}, {tokens[1]} ({type(tokens[1])})")
+        return cls(tokens[0], tokens[1])
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>: {self._name}{self._expression}"
 
 
 class AttributeExpression(Expression):
