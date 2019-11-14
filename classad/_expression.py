@@ -5,6 +5,12 @@ from typing import Any
 from classad._classad import ClassAd
 
 
+def evaluate_isnt_operator(a, b):
+    if type(a) == type(b) and a == b:
+        return False
+    return True
+
+
 class Expression:
     def __init__(self):
         self._expression = None
@@ -48,7 +54,9 @@ class ArithmeticExpression(Expression):
         ">": operator.gt,
         "==": operator.eq,
         "&&": operator.and_,
-        "||": operator.or_
+        "||": operator.or_,
+        "=!=": evaluate_isnt_operator,
+        "isnt": evaluate_isnt_operator
     }
 
     @classmethod
