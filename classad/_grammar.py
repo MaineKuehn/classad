@@ -1,7 +1,8 @@
 import pyparsing as pp
 
 from classad._classad import ClassAd
-from classad._expression import Expression, AttributeExpression, FunctionExpression
+from classad._expression import Expression, AttributeExpression, FunctionExpression, \
+    ArithmeticExpression
 from classad._primitives import Error, Undefined
 
 pp.ParserElement.enablePackrat()
@@ -17,12 +18,12 @@ RBRACE = pp.Suppress("}")
 
 # Reserved Words
 boolean_literal = pp.oneOf("true false", caseless=True, asKeyword=True).setParseAction(
-    lambda s, l, t: [t[0] in ["true"]])("boolean*")
+    lambda s, l, t: t[0] in ["true"])
 error_literal = pp.CaselessKeyword("error").setParseAction(
-    lambda: [Error()])("error*")
+    lambda: Error())
 undefined_literal = pp.CaselessKeyword("undefined").setParseAction(
-    lambda: [Undefined()])("undefined*")
-parent_literal = pp.CaselessKeyword("parent")("parent*")
+    lambda: Undefined())
+parent_literal = pp.CaselessKeyword("parent")
 
 # Tokens
 octal_digit = pp.srange("[0-7]")
@@ -42,7 +43,7 @@ integer_literal = (
     | pp.Word(nonzero_digit, decimal_digit)
     | pp.Combine("0" + pp.Word(octal_digit))
     | pp.Combine("0" + pp.Word(pp.srange("[xX]"), pp.hexnums))
-).setParseAction(lambda s, l, t: [int(t[0])])("integer*")
+).setParseAction(lambda s, l, t: int(t[0]))("integer*")
 exponent = pp.Combine(
     pp.CaselessLiteral("e") + pp.Optional(pp.oneOf("+ -")) + pp.Word(pp.nums)
 )
@@ -50,7 +51,7 @@ floating_point_literal = (
     pp.Combine(pp.Word(pp.nums) + "." + pp.Word(pp.nums) + pp.Optional(exponent))
     | pp.Combine("." + pp.Word(pp.nums) + pp.Optional(exponent))
     | pp.Combine(pp.Word(pp.nums) + exponent)
-).setParseAction(lambda s, l, t: [float(t[0])]).setResultsName("float*")
+).setParseAction(lambda s, l, t: float(t[0])).setResultsName("float*")
 escaped_char = pp.Word("NnTtBbRrFf\\\"'", max=1)
 non_quote = (
     "\\" + escaped_char
@@ -65,7 +66,7 @@ string_literal = (DQUOTE + pp.ZeroOrMore(non_quote | "'") + DQUOTE)("string*").s
 )
 literal = (floating_point_literal | integer_literal | string_literal).setName("literal")
 attribute_name = (unquoted_name | quoted_name)("attribute_name*").setParseAction(
-    lambda s, l, t: [AttributeExpression.from_grammar(t[0])]).setName(
+    lambda s, l, t: AttributeExpression.from_grammar(t[0])).setName(
     "attribute_name"
 )
 
@@ -74,9 +75,9 @@ expression = pp.Forward()
 suffix_expression = pp.Forward()
 arithmetic_expression = pp.Forward()
 
-list_expression = (
-    LBRACE + pp.Group(pp.Optional(pp.delimitedList(expression)))("list*") + RBRACE
-).setName("list_expression")
+list_expression = pp.Group(
+    LBRACE + pp.Optional(pp.delimitedList(expression)) + RBRACE
+).setParseAction(lambda s, l, t: tuple(t[0])).setName("list_expression")
 attribute_definition = (pp.Group(attribute_name + pp.Suppress("=") + expression))(
     "attribute*"
 ).setName("attribute_definition")
@@ -86,32 +87,32 @@ record_expression = (
         "record*"
     )
     + RBRACKET
-    | pp.Group(pp.Optional(pp.delimitedList(attribute_definition, delim=pp.Empty())))
+    | pp.Group(pp.delimitedList(attribute_definition, delim=pp.Empty()))
 ).setParseAction(
-    lambda s, l, t: [ClassAd.from_grammar(t[0])]).setName("record_expression")
+    lambda s, l, t: ClassAd.from_grammar(t[0])).setName("record_expression")
 function_call = (
     unquoted_name + LPAR + pp.Group(pp.Optional(pp.delimitedList(expression))) + RPAR
 )("function*").setParseAction(
-    lambda s, l, t: [FunctionExpression.from_grammar(t)]).setName("function_call")
+    lambda s, l, t: FunctionExpression.from_grammar(t)).setName("function_call")
 atom = (
-    boolean_literal
+    LPAR + expression + RPAR
+    | list_expression
+    | boolean_literal
     | error_literal
     | undefined_literal
     | parent_literal
-    | literal
     | function_call
-    | attribute_name
-    | list_expression
     | record_expression
-    | LPAR + expression + RPAR
+    | literal
+    | attribute_name
 ).setName("atom")
 subscriptable = (  # introduced to remove recursion in suffix_expression
-    error_literal
+    list_expression
+    | error_literal
     | undefined_literal
     | parent_literal
     | function_call
     | attribute_name
-    | list_expression
     | record_expression
     | LPAR + expression + RPAR
 ).setName("subscriptable")
@@ -120,16 +121,22 @@ suffix_expression << (
     | subscriptable + LBRACKET + expression + RBRACKET
     | atom
 ).setName("suffix_expression")
+
+
+def binary_parse_action(s, l, t):
+    return ArithmeticExpression.from_grammar(t[0])
+
+
 # unary operators: + - ~ !
 # binary operators: \\ && | ^ & == != is isnt < > <= >= << >> >>> + - * / %
 arithmetic_expression << pp.infixNotation(suffix_expression, [
     ("-", 1, pp.opAssoc.RIGHT),
-    (pp.oneOf("* /"), 2, pp.opAssoc.LEFT),
-    (pp.oneOf("+ -"), 2, pp.opAssoc.LEFT),
-    (pp.oneOf("< <= >= >"), 2, pp.opAssoc.LEFT),
-    (pp.oneOf("== != =?= is =!= isnt"), 2, pp.opAssoc.LEFT),
-    ("&&", 2, pp.opAssoc.LEFT),
-    ("||", 2, pp.opAssoc.LEFT)
+    (pp.oneOf("* /"), 2, pp.opAssoc.LEFT, binary_parse_action),
+    (pp.oneOf("+ -"), 2, pp.opAssoc.LEFT, binary_parse_action),
+    (pp.oneOf("< <= >= >"), 2, pp.opAssoc.LEFT, binary_parse_action),
+    (pp.oneOf("== != =?= is =!= isnt"), 2, pp.opAssoc.LEFT, binary_parse_action),
+    ("&&", 2, pp.opAssoc.LEFT, binary_parse_action),
+    ("||", 2, pp.opAssoc.LEFT, binary_parse_action)
 ])
 
 expression << pp.Group(
@@ -139,4 +146,4 @@ expression << pp.Group(
     + pp.Suppress(":")
     + pp.Group(expression)("else")
     | arithmetic_expression
-).setParseAction(lambda s, l, t: [Expression.from_grammar(t[0])]).setName("expression")
+).setParseAction(lambda s, l, t: Expression.from_grammar(t[0])).setName("expression")
