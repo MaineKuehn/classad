@@ -151,3 +151,11 @@ expression << pp.Group(
     + pp.Group(expression)("else")
     | arithmetic_expression
 ).setParseAction(lambda s, l, t: Expression.from_grammar(t[0])).setName("expression")
+
+
+def parse(content: str):
+    try:
+        result = expression.parseString(content, parseAll=True)
+    except pp.ParseException:
+        raise
+    return result[0]

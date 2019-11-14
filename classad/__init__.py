@@ -49,5 +49,6 @@ from ._functions import (  # noqa: F401
     userHome,
     userMap,
 )
+from ._grammar import parse  # noqa: F401
 
 __version__ = "0.1.1"

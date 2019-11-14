@@ -1,4 +1,4 @@
-from classad import _grammar, quantize
+from classad import _grammar, quantize, parse
 from classad._classad import ClassAd
 
 
@@ -76,3 +76,7 @@ class TestGrammar(object):
             'join(split("a b c"))')[0].evaluate(None, None) == "abc"
         assert _grammar.expression.parseString(
             'join(";", split("a b c"))')[0].evaluate(None, None) == "a;b;c"
+
+    def test_parse(self):
+        classad = "[a = 1; b = 2]"
+        assert _grammar.expression.parseString(classad)[0] == parse(classad)
