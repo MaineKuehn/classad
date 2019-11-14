@@ -57,5 +57,10 @@ class ClassAd(MutableMapping):
             result[token[0]] = token[1]
         return result
 
+    def __eq__(self, other):
+        if type(self) == type(other):
+            return self._data == other._data
+        return False
+
     def __repr__(self):
         return f"<{self.__class__.__name__}>: {self._data}"
