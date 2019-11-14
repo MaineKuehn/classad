@@ -55,14 +55,14 @@ floating_point_literal = (
 ).setParseAction(lambda s, l, t: float(t[0])).setResultsName("float*")
 escaped_char = pp.Word("NnTtBbRrFf\\\"'", max=1)
 non_quote = (
-    "\\" + escaped_char
-    | "\\" + pp.Word(octal_digit, min=1, max=2)
-    | "\\" + pp.Word(pp.srange("[0-3]"), max=1) + pp.Word(octal_digit, min=2, max=2)
-    | pp.Word(pp.printables, excludeChars="\"'\\\n\r0")
+    pp.Combine("\\" + escaped_char)
+    | pp.Combine("\\" + pp.Word(octal_digit, min=1, max=2))
+    | pp.Combine("\\" + pp.Word(pp.srange("[0-3]"), max=1) + pp.Word(octal_digit, min=2, max=2))
+    | pp.Word(pp.printables, " ", excludeChars="\"'\\\n\r0")
 )
 unquoted_name = pp.Word(pp.alphas + "_", pp.alphanums + "_")
 quoted_name = (SQUOTE + pp.OneOrMore(non_quote | '"') + SQUOTE).setName("quoted_name")
-string_literal = (DQUOTE + pp.ZeroOrMore(non_quote | "'") + DQUOTE)("string*").setName(
+string_literal = pp.Combine(DQUOTE + pp.ZeroOrMore(non_quote | "'") + DQUOTE)("string*").setName(
     "string_literal"
 )
 literal = (floating_point_literal | integer_literal | string_literal).setName("literal")
@@ -84,7 +84,7 @@ attribute_definition = (pp.Group(attribute_name + pp.Suppress("=") + expression)
 ).setName("attribute_definition")
 record_expression = (
     LBRACKET
-    + pp.Group(pp.Optional(pp.delimitedList(attribute_definition, delim=";")))(
+    + pp.Group(pp.Optional(pp.delimitedList(attribute_definition, delim=";") + pp.Optional(pp.Suppress(";"))))(
         "record*"
     )
     + RBRACKET
@@ -92,12 +92,11 @@ record_expression = (
 ).setParseAction(
     lambda s, l, t: ClassAd.from_grammar(t[0])).setName("record_expression")
 function_call = (
-    unquoted_name + LPAR + pp.Group(pp.Optional(pp.delimitedList(expression))) + RPAR
+    pp.Combine(unquoted_name + LPAR) + pp.Group(pp.Optional(pp.delimitedList(expression))).setParseAction(lambda s, l, t: tuple(t[0])) + RPAR
 )("function*").setParseAction(
     lambda s, l, t: FunctionExpression.from_grammar(t)).setName("function_call")
 atom = (
-    LPAR + expression + RPAR
-    | list_expression
+    list_expression
     | boolean_literal
     | error_literal
     | undefined_literal
@@ -106,6 +105,7 @@ atom = (
     | record_expression
     | literal
     | attribute_name
+    | LPAR + expression + RPAR
 ).setName("atom")
 subscriptable = (  # introduced to remove recursion in suffix_expression
     list_expression
