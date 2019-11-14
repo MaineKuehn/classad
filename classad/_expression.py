@@ -1,3 +1,5 @@
+import operator
+import pyparsing as pp
 from typing import Any
 
 from classad._classad import ClassAd
@@ -12,7 +14,9 @@ class Expression:
 
     @classmethod
     def from_grammar(cls, tokens):
-        print(f"received {tokens}")
+        if isinstance(tokens, pp.ParseResults):
+            if len(tokens) == 1:
+                return tokens[0]
         result = cls()
         result._expression = tokens
         return result
@@ -22,16 +26,34 @@ class Expression:
 
 
 class FunctionExpression(Expression):
-    @classmethod
-    def from_grammar(cls, tokens):
-        result = cls()
-        result._expression = tokens
-        return result
+    pass
 
 
 class AttributeExpression(Expression):
+    pass
+
+
+class ArithmeticExpression(Expression):
+    operator_map = {
+        "+": operator.add,
+        "-": operator.sub,
+        "*": operator.mul,
+        "/": operator.truediv,
+        "<": operator.lt,
+        "<=": operator.le,
+        "=>": operator.ge,
+        ">": operator.gt
+    }
+
     @classmethod
     def from_grammar(cls, tokens):
         result = cls()
-        result._expression = tokens
+        try:
+            return cls.operator_map[tokens[1]](tokens[0], tokens[-1])
+        except TypeError:
+            # TODO: lazy loading required
+            if len(tokens) > 1:
+                result._expression = tuple(tokens)
+            else:
+                result._expression = tokens[0]
         return result
