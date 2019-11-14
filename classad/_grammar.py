@@ -24,6 +24,7 @@ error_literal = pp.CaselessKeyword("error").setParseAction(
 undefined_literal = pp.CaselessKeyword("undefined").setParseAction(
     lambda: Undefined())
 parent_literal = pp.CaselessKeyword("parent")
+target_literal = pp.CaselessKeyword("target")
 
 # Tokens
 octal_digit = pp.srange("[0-7]")
@@ -111,13 +112,15 @@ subscriptable = (  # introduced to remove recursion in suffix_expression
     | error_literal
     | undefined_literal
     | parent_literal
+    | target_literal
     | function_call
     | attribute_name
     | record_expression
     | LPAR + expression + RPAR
 ).setName("subscriptable")
 suffix_expression << (
-    subscriptable + "." + attribute_name
+    pp.Group(subscriptable + pp.Suppress(".") + attribute_name).setParseAction(
+        lambda s, l, t: AttributeExpression.from_grammar(t[0]))
     | subscriptable + LBRACKET + expression + RBRACKET
     | atom
 ).setName("suffix_expression")
