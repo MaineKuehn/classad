@@ -7,14 +7,16 @@ class Undefined:
     """
     The keyword ``UNDEFINED`` (case insensitive) represents the ``UNDEFINED`` value.
     """
-    pass
+    def __eq__(self, other):
+        return type(self) == type(other)
 
 
 class Error:
     """
     The keyword ``ERROR`` (case insensitive) represents the ``ERROR`` value.
     """
-    pass
+    def __eq__(self, other):
+        return type(self) == type(other)
 
 
 class Attribute:
