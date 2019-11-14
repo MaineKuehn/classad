@@ -18,7 +18,10 @@ class ClassAd(MutableMapping):
         Keynames that are reserved and, therefore, cannot be used: error, false, is,
             isnt, parent, true, undefined
         """
-        key = key.casefold()
+        try:
+            key = key.casefold()
+        except AttributeError:
+            key = key._expression.casefold()
         if key in ["error", "false", "is", "isnt", "parent", "true", "undefined"]:
             raise ValueError(f"{key} is a reserved name")
         self._data[key] = value
@@ -45,3 +48,14 @@ class ClassAd(MutableMapping):
         """
         expression = self[key]
         return expression.evaluate(my=self, target=target)
+
+    @classmethod
+    def from_grammar(cls, tokens):
+        result = cls()
+        for token in tokens:
+            print(token)
+            result[token[0]] = token[1]
+        return result
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>: {self._data}"
