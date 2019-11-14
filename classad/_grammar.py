@@ -57,14 +57,14 @@ escaped_char = pp.Word("NnTtBbRrFf\\\"'", max=1)
 non_quote = (
     pp.Combine("\\" + escaped_char)
     | pp.Combine("\\" + pp.Word(octal_digit, min=1, max=2))
-    | pp.Combine("\\" + pp.Word(pp.srange("[0-3]"), max=1) + pp.Word(octal_digit, min=2, max=2))
+    | pp.Combine("\\" + pp.Word(pp.srange("[0-3]"), max=1)
+                 + pp.Word(octal_digit, min=2, max=2))
     | pp.Word(pp.printables, " ", excludeChars="\"'\\\n\r0")
 )
 unquoted_name = pp.Word(pp.alphas + "_", pp.alphanums + "_")
 quoted_name = (SQUOTE + pp.OneOrMore(non_quote | '"') + SQUOTE).setName("quoted_name")
-string_literal = pp.Combine(DQUOTE + pp.ZeroOrMore(non_quote | "'") + DQUOTE)("string*").setName(
-    "string_literal"
-)
+string_literal = pp.Combine(DQUOTE + pp.ZeroOrMore(non_quote | "'")
+                            + DQUOTE)("string*").setName("string_literal")
 literal = (floating_point_literal | integer_literal | string_literal).setName("literal")
 attribute_name = (unquoted_name | quoted_name)("attribute_name*").setParseAction(
     lambda s, l, t: AttributeExpression.from_grammar(t[0])).setName(
@@ -84,15 +84,16 @@ attribute_definition = (pp.Group(attribute_name + pp.Suppress("=") + expression)
 ).setName("attribute_definition")
 record_expression = (
     LBRACKET
-    + pp.Group(pp.Optional(pp.delimitedList(attribute_definition, delim=";") + pp.Optional(pp.Suppress(";"))))(
-        "record*"
-    )
+    + pp.Group(pp.Optional(pp.delimitedList(attribute_definition, delim=";")
+                           + pp.Optional(pp.Suppress(";"))))("record*")
     + RBRACKET
     | pp.Group(pp.delimitedList(attribute_definition, delim=pp.Empty()))
 ).setParseAction(
     lambda s, l, t: ClassAd.from_grammar(t[0])).setName("record_expression")
 function_call = (
-    pp.Combine(unquoted_name + LPAR) + pp.Group(pp.Optional(pp.delimitedList(expression))).setParseAction(lambda s, l, t: tuple(t[0])) + RPAR
+    pp.Combine(unquoted_name + LPAR)
+    + pp.Group(pp.Optional(pp.delimitedList(expression))).setParseAction(
+        lambda s, l, t: tuple(t[0])) + RPAR
 )("function*").setParseAction(
     lambda s, l, t: FunctionExpression.from_grammar(t)).setName("function_call")
 atom = (

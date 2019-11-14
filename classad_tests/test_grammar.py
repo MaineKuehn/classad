@@ -57,13 +57,17 @@ class TestGrammar(object):
         assert _grammar.expression.parseString(
             "quantize(0, {4})")[0].evaluate(None, None) == quantize(0, [4])
         assert _grammar.expression.parseString(
-            'quantize(2, {1, 2, "A"})')[0].evaluate(None, None) == quantize(2, [1, 2, "A"])
+            'quantize(2, {1, 2, "A"})')[0].evaluate(None, None) == quantize(
+            2, [1, 2, "A"])
         assert _grammar.expression.parseString(
-            "quantize(3, {1, 2, 0.5})")[0].evaluate(None, None) == quantize(3, [1, 2, 0.5])
+            "quantize(3, {1, 2, 0.5})")[0].evaluate(None, None) == quantize(
+            3, [1, 2, 0.5])
         assert _grammar.expression.parseString(
-            "quantize(2.7, {1, 2, 0.5})")[0].evaluate(None, None) == quantize(2.7, [1, 2, 0.5])
+            "quantize(2.7, {1, 2, 0.5})")[0].evaluate(None, None) == quantize(
+            2.7, [1, 2, 0.5])
         assert _grammar.expression.parseString(
-            'quantize(3, {1, 2, "A"})')[0].evaluate(None, None) == quantize(3, [1, 2, "A"])
+            'quantize(3, {1, 2, "A"})')[0].evaluate(None, None) == quantize(
+            3, [1, 2, "A"])
 
     def test_join(self):
         assert _grammar.expression.parseString(
