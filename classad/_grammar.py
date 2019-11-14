@@ -15,13 +15,6 @@ RBRACKET = pp.Suppress("]")
 LBRACE = pp.Suppress("{")
 RBRACE = pp.Suppress("}")
 
-# Operators
-binary_operator = pp.oneOf("\\\\ && | ^ & == != is isnt < > <= >= << >> >>> + - * / %")(
-    "operator*"
-)
-unary_operator = pp.Word("+-~!", max=1)("unary_operator*").setName("unary_operator")
-operator = binary_operator | unary_operator
-
 # Reserved Words
 boolean_literal = pp.oneOf("true false", caseless=True, asKeyword=True).setParseAction(
     lambda s, l, t: [t[0] in ["true"]])("boolean*")
@@ -79,7 +72,7 @@ attribute_name = (unquoted_name | quoted_name)("attribute_name*").setParseAction
 # Expression grammar
 expression = pp.Forward()
 suffix_expression = pp.Forward()
-binary_expression = pp.Forward()
+arithmetic_expression = pp.Forward()
 
 list_expression = (
     LBRACE + pp.Group(pp.Optional(pp.delimitedList(expression)))("list*") + RBRACE
@@ -127,17 +120,23 @@ suffix_expression << (
     | subscriptable + LBRACKET + expression + RBRACKET
     | atom
 ).setName("suffix_expression")
-prefix_expression = (pp.Optional(unary_operator) + suffix_expression).setName(
-    "prefix_expression"
-)
-binary_expression << (
-    prefix_expression + binary_operator + binary_expression | prefix_expression
-).setName("binary_expression")
-expression << (
-    pp.Group(binary_expression)("if")
+# unary operators: + - ~ !
+# binary operators: \\ && | ^ & == != is isnt < > <= >= << >> >>> + - * / %
+arithmetic_expression << pp.infixNotation(suffix_expression, [
+    ("-", 1, pp.opAssoc.RIGHT),
+    (pp.oneOf("* /"), 2, pp.opAssoc.LEFT),
+    (pp.oneOf("+ -"), 2, pp.opAssoc.LEFT),
+    (pp.oneOf("< <= >= >"), 2, pp.opAssoc.LEFT),
+    (pp.oneOf("== != =?= is =!= isnt"), 2, pp.opAssoc.LEFT),
+    ("&&", 2, pp.opAssoc.LEFT),
+    ("||", 2, pp.opAssoc.LEFT)
+])
+
+expression << pp.Group(
+    pp.Group(arithmetic_expression)("if")
     + pp.Suppress("?")
     + pp.Group(expression)("then")
     + pp.Suppress(":")
     + pp.Group(expression)("else")
-    | binary_expression
+    | arithmetic_expression
 ).setParseAction(lambda s, l, t: [Expression.from_grammar(t[0])]).setName("expression")
