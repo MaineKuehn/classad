@@ -616,14 +616,16 @@ def size(expression: literal_type) -> Union[int, Error]:
     raise NotImplementedError
 
 
-def split(s: str, tokens: Optional[str]) -> List[str]:
+def split(s: str, tokens: Optional[str] = None) -> List[str]:
     """
     Returns a list of the substrings of :py:attr:`s` that have been split up by
     using any of the characters within string :py:attr:`tokens`.
     If :py:attr:`tokens` is not specified, then all white space characters are
     used to delimit the string.
     """
-    raise NotImplementedError
+    if tokens:
+        raise NotImplementedError
+    return s.split()
 
 
 def splitUserName(name: str) -> List[str]:
