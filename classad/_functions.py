@@ -50,7 +50,7 @@ def eval(expression: literal_type) -> literal_type:
     result of evaluating the contents of the string as a :py:class:`~.ClassAd`
     expression.
     """
-    if isinstance(expression, (float, py_int, Undefined, Error)):
+    if isinstance(expression, (float, py_int, Undefined, Error, str, list)):
         return expression
     raise NotImplementedError
 
@@ -403,7 +403,7 @@ def quantize(a, b):
         3.0   = quantize(2.7, {1, 2, 0.5})
         ERROR = quantize(3, {1, 2, "A"})
     """
-    if isinstance(b, list):
+    if isinstance(b, list) or isinstance(b, tuple):
         for element in b:
             try:
                 if element >= a:
@@ -501,7 +501,7 @@ def join(*args):
     If there is only one argument, and the argument is a list, all members of
     the list are converted to strings and then concatenated.
 
-    Resturns :py:class:`~.Error` if any argument evaluates to :py:class:`~Undefined`
+    Returns :py:class:`~.Error` if any argument evaluates to :py:class:`~Undefined`
     or :py:class:`~.Error`.
 
     For example:
