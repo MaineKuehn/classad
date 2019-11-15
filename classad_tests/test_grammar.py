@@ -1,5 +1,6 @@
 from classad import _grammar, quantize, parse
 from classad._classad import ClassAd
+from classad._primitives import Error, Undefined, HTCInt, HTCFloat, HTCList, HTCStr
 
 
 class TestGrammar(object):
@@ -42,41 +43,70 @@ class TestGrammar(object):
         assert old_result[0] == new_result[0]
 
     def test_quantize(self):
-        assert _grammar.expression.parseString(
-            "quantize(3, 8)")[0].evaluate(None, None) == quantize(3, 8)
-        assert _grammar.expression.parseString(
-            "quantize(3, 2)")[0].evaluate(None, None) == quantize(3, 2)
-        assert _grammar.expression.parseString(
-            "quantize(0, 4)")[0].evaluate(None, None) == quantize(0, 4)
-        assert _grammar.expression.parseString(
-            "quantize(1.5, 6.8)")[0].evaluate(None, None) == quantize(1.5, 6.8)
-        assert _grammar.expression.parseString(
-            "quantize(6.8, 1.2)")[0].evaluate(None, None) == quantize(6.8, 1.2)
-        assert _grammar.expression.parseString(
-            "quantize(10, 5.1)")[0].evaluate(None, None) == quantize(10, 5.1)
-        assert _grammar.expression.parseString(
-            "quantize(0, {4})")[0].evaluate(None, None) == quantize(0, [4])
-        assert _grammar.expression.parseString(
-            'quantize(2, {1, 2, "A"})')[0].evaluate(None, None) == quantize(
-            2, [1, 2, "A"])
-        assert _grammar.expression.parseString(
-            "quantize(3, {1, 2, 0.5})")[0].evaluate(None, None) == quantize(
-            3, [1, 2, 0.5])
-        assert _grammar.expression.parseString(
-            "quantize(2.7, {1, 2, 0.5})")[0].evaluate(None, None) == quantize(
-            2.7, [1, 2, 0.5])
-        assert _grammar.expression.parseString(
-            'quantize(3, {1, 2, "A"})')[0].evaluate(None, None) == quantize(
-            3, [1, 2, "A"])
+        assert _grammar.expression.parseString("quantize(3, 8)")[0].evaluate(
+            None, None
+        ) == quantize(HTCInt(3), HTCInt(8))
+        assert _grammar.expression.parseString("quantize(3, 2)")[0].evaluate(
+            None, None
+        ) == quantize(HTCInt(3), HTCInt(2))
+        assert _grammar.expression.parseString("quantize(0, 4)")[0].evaluate(
+            None, None
+        ) == quantize(HTCInt(0), HTCInt(4))
+        assert _grammar.expression.parseString("quantize(1.5, 6.8)")[0].evaluate(
+            None, None
+        ) == quantize(HTCFloat(1.5), HTCFloat(6.8))
+        assert _grammar.expression.parseString("quantize(6.8, 1.2)")[0].evaluate(
+            None, None
+        ) == quantize(HTCFloat(6.8), HTCFloat(1.2))
+        assert _grammar.expression.parseString("quantize(10, 5.1)")[0].evaluate(
+            None, None
+        ) == quantize(HTCInt(10), HTCFloat(5.1))
+        assert _grammar.expression.parseString("quantize(0, {4})")[0].evaluate(
+            None, None
+        ) == quantize(HTCInt(0), HTCList([HTCInt(4)]))
+        assert _grammar.expression.parseString('quantize(2, {1, 2, "A"})')[0].evaluate(
+            None, None
+        ) == quantize(HTCInt(2), HTCList([HTCInt(1), HTCInt(2), HTCStr("A")]))
+        assert _grammar.expression.parseString("quantize(3, {1, 2, 0.5})")[0].evaluate(
+            None, None
+        ) == quantize(HTCInt(3), HTCList([HTCInt(1), HTCInt(2), HTCFloat(0.5)]))
+        assert _grammar.expression.parseString("quantize(2.7, {1, 2, 0.5})")[
+            0
+        ].evaluate(None, None) == quantize(
+            HTCFloat(2.7), HTCList([HTCInt(1), HTCInt(2), HTCFloat(0.5)])
+        )
+        assert _grammar.expression.parseString('quantize(3, {1, 2, "A"})')[0].evaluate(
+            None, None
+        ) == quantize(HTCInt(3), HTCList([HTCInt(1), HTCInt(2), HTCStr("A")]))
 
     def test_join(self):
-        assert _grammar.expression.parseString(
-            'join(", ", "a", "b", "c")')[0].evaluate(None, None) == "a, b, c"
-        assert _grammar.expression.parseString(
-            'join(split("a b c"))')[0].evaluate(None, None) == "abc"
-        assert _grammar.expression.parseString(
-            'join(";", split("a b c"))')[0].evaluate(None, None) == "a;b;c"
+        assert (
+            _grammar.expression.parseString('join(", ", "a", "b", "c")')[0].evaluate(
+                None, None
+            )
+            == "a, b, c"
+        )
+        assert (
+            _grammar.expression.parseString('join(split("a b c"))')[0].evaluate(
+                None, None
+            )
+            == "abc"
+        )
+        assert (
+            _grammar.expression.parseString('join(";", split("a b c"))')[0].evaluate(
+                None, None
+            )
+            == "a;b;c"
+        )
 
     def test_parse(self):
         classad = "[a = 1; b = 2]"
         assert _grammar.expression.parseString(classad)[0] == parse(classad)
+
+    def test_example_expressions(self):
+        assert parse("(10 == 10)") == True  # noqa: E712
+        assert parse("(10 == 5)") == False  # noqa: E712
+        assert parse('(10 == "ABC")') == Error()
+        assert parse('"ABC" == "abc"') == True  # noqa: E712
+        assert parse("(10 == UNDEFINED)") == Undefined()
+        assert parse("(UNDEFINED == UNDEFINED)") == Undefined()

@@ -1,35 +1,46 @@
 import pytest
 
 from classad import quantize
-from classad._primitives import Error
-
+from classad._primitives import Error, HTCInt, HTCFloat, HTCList, HTCStr
 
 FLOAT_APPROXIMATION = 0.0000000001
 
 
 class TestQuantize:
     def test_int(self):
-        assert isinstance(quantize(2, 1), int)
-        assert isinstance(quantize(2.0, 1), int)
-        assert isinstance(quantize(0, 2), int)
+        assert isinstance(quantize(HTCInt(2), HTCInt(1)), HTCInt)
+        assert isinstance(quantize(HTCFloat(2.0), HTCInt(1)), HTCInt)
+        assert isinstance(quantize(HTCInt(0), HTCInt(2)), HTCInt)
 
     def test_float(self):
-        assert isinstance(quantize(2, 1.0), float)
-        assert isinstance(quantize(2.0, 1.0), float)
-        assert isinstance(quantize(1.0, 2.1), float)
-        assert isinstance(quantize(0, 2.0), float)
+        assert isinstance(quantize(HTCInt(2), HTCFloat(1.0)), HTCFloat)
+        assert isinstance(quantize(HTCFloat(2.0), HTCFloat(1.0)), HTCFloat)
+        assert isinstance(quantize(HTCFloat(1.0), HTCFloat(2.1)), HTCFloat)
+        assert isinstance(quantize(HTCInt(0), HTCFloat(2.0)), HTCFloat)
 
     def test_examples(self):
-        assert 8 == quantize(3, 8)
-        assert 4 == quantize(3, 2)
-        assert 0 == quantize(0, 4)
-        assert pytest.approx(6.8, FLOAT_APPROXIMATION) == quantize(1.5, 6.8)
-        assert pytest.approx(7.2, FLOAT_APPROXIMATION) == quantize(6.8, 1.2)
-        assert pytest.approx(10.2, FLOAT_APPROXIMATION) == quantize(10, 5.1)
+        assert 8 == quantize(HTCInt(3), HTCInt(8))
+        assert 4 == quantize(HTCInt(3), HTCInt(2))
+        assert 0 == quantize(HTCInt(0), HTCInt(4))
+        assert pytest.approx(6.8, FLOAT_APPROXIMATION) == quantize(
+            HTCFloat(1.5), HTCFloat(6.8)
+        )
+        assert pytest.approx(7.2, FLOAT_APPROXIMATION) == quantize(
+            HTCFloat(6.8), HTCFloat(1.2)
+        )
+        assert pytest.approx(10.2, FLOAT_APPROXIMATION) == quantize(
+            HTCInt(10), HTCFloat(5.1)
+        )
 
     def test_list_examples(self):
-        assert 4 == quantize(0, [4])
-        assert 2 == quantize(2, [1, 2, "A"])
-        assert 3.0 == quantize(3, [1, 2, 0.5])
-        assert 3.0 == quantize(2.7, [1, 2, 0.5])
-        assert isinstance(quantize(3, [1, 2, "A"]), Error)
+        assert 4 == quantize(HTCInt(0), HTCList([HTCInt(4)]))
+        assert 2 == quantize(HTCInt(2), HTCList([HTCInt(1), HTCInt(2), HTCStr("A")]))
+        assert 3.0 == quantize(
+            HTCInt(3), HTCList([HTCInt(1), HTCInt(2), HTCFloat(0.5)])
+        )
+        assert 3.0 == quantize(
+            HTCFloat(2.7), HTCList([HTCInt(1), HTCInt(2), HTCFloat(0.5)])
+        )
+        assert isinstance(
+            quantize(HTCInt(3), HTCList([HTCInt(1), HTCInt(2), HTCStr("A")])), Error
+        )
