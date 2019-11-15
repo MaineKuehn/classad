@@ -104,9 +104,9 @@ class TestGrammar(object):
         assert _grammar.expression.parseString(classad)[0] == parse(classad)
 
     def test_example_expressions(self):
-        assert parse("(10 == 10)") == True  # noqa: E712
-        assert parse("(10 == 5)") == False  # noqa: E712
+        assert parse("(10 == 10)")
+        assert not parse("(10 == 5)")
         assert parse('(10 == "ABC")') == Error()
-        assert parse('"ABC" == "abc"') == True  # noqa: E712
+        assert parse('"ABC" == "abc"')
         assert parse("(10 == UNDEFINED)") == Undefined()
         assert parse("(UNDEFINED == UNDEFINED)") == Undefined()
