@@ -10,6 +10,14 @@ class Undefined:
     def __eq__(self, other):
         return Undefined()
 
+    def __is__(self, other):
+        if type(self) == type(other):
+            return HTCBool(1)
+        return HTCBool(0)
+
+    def __isnt__(self, other):
+        return not self.__is__(other)
+
 
 class Error:
     """
@@ -39,6 +47,23 @@ class HTCInt(int):
             return Error()
         return super().__eq__(other)
 
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if isinstance(result, bool):
+            return not result
+        return result
+
+    def __is__(self, other):
+        """Case-sensitive comparison"""
+        if type(self) == type(other) and self == other:
+            return HTCBool(1)
+        return HTCBool(0)
+
+    def __isnt__(self, other):
+        if type(self) != type(other) or self != other:
+            return HTCBool(1)
+        return HTCBool(0)
+
 
 class HTCList(tuple):
     pass
@@ -52,12 +77,34 @@ class HTCStr(str):
             return self.lower() == other.lower()
         return super().__eq__(other)
 
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if isinstance(result, bool):
+            return not result
+        return result
+
+    def __is__(self, other):
+        if type(self) == type(other) and super().__eq__(other):
+            return HTCBool(1)
+        return HTCBool(0)
+
+    def __isnt__(self, other):
+        if type(self) != type(other) or super().__ne__(other):
+            return HTCBool(1)
+        return HTCBool(0)
+
 
 class HTCFloat(float):
     def __eq__(self, other):
         if isinstance(other, Undefined):
             return Undefined()
         return super().__eq__(other)
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if isinstance(result, bool):
+            return not result
+        return result
 
 
 class HTCBool(object):

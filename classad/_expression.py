@@ -7,9 +7,14 @@ from ._classad import ClassAd
 
 
 def evaluate_isnt_operator(a, b):
+    return a.__isnt__(b)
     if type(a) == type(b) and a == b:
         return False
     return True
+
+
+def evaluate_is_operator(a, b):
+    return a.__is__(b)
 
 
 class Expression:
@@ -32,7 +37,7 @@ class Expression:
         return f"<{self.__class__.__name__}>: {self._expression}"
 
     def __eq__(self, other):
-        raise TypeError
+        return type(self) == type(other) and self._expression == other._expression
 
 
 class FunctionExpression(Expression):
@@ -42,19 +47,16 @@ class FunctionExpression(Expression):
         self._expression = args
 
     def evaluate(self, my: ClassAd, target: ClassAd) -> Any:
-        print(f"{self._name}: {self._expression}")
         expression = []
         for element in self._expression:
             if isinstance(element, Expression):
                 expression.append(element.evaluate(my, target))
             else:
                 expression.append(element)
-        print(f"calling with {expression}")
         return getattr(_functions, self._name)(*expression)
 
     @classmethod
     def from_grammar(cls, tokens):
-        print(f"received {tokens}, {tokens[1]} ({type(tokens[1])})")
         return cls(tokens[0], tokens[1])
 
     def __repr__(self):
@@ -62,7 +64,51 @@ class FunctionExpression(Expression):
 
 
 class AttributeExpression(Expression):
-    pass
+    def __add__(self, other):
+        raise TypeError
+
+    def __sub__(self, other):
+        raise TypeError
+
+    def __mul__(self, other):
+        raise TypeError
+
+    def __truediv__(self, other):
+        raise TypeError
+
+    def __lt__(self, other):
+        raise TypeError
+
+    def __le__(self, other):
+        raise TypeError
+
+    def __ge__(self, other):
+        raise TypeError
+
+    def __gt__(self, other):
+        raise TypeError
+
+    def __eq__(self, other):
+        if type(self) == type(other):
+            if self._expression == other._expression:
+                return True
+            return False
+        raise TypeError
+
+    def __ne__(self, other):
+        raise TypeError
+
+    def __and__(self, other):
+        raise TypeError
+
+    def __or__(self, other):
+        raise TypeError
+
+    def __isnt__(self, other):
+        raise TypeError
+
+    def __is__(self, other):
+        raise TypeError
 
 
 class ArithmeticExpression(Expression):
@@ -76,10 +122,13 @@ class ArithmeticExpression(Expression):
         "=>": operator.ge,
         ">": operator.gt,
         "==": operator.eq,
+        "!=": operator.ne,
         "&&": operator.and_,
         "||": operator.or_,
         "=!=": evaluate_isnt_operator,
-        "isnt": evaluate_isnt_operator
+        "isnt": evaluate_isnt_operator,
+        "=?=": evaluate_is_operator,
+        "is": evaluate_is_operator
     }
 
     @classmethod
@@ -87,10 +136,19 @@ class ArithmeticExpression(Expression):
         result = cls()
         try:
             return cls.operator_map[tokens[1]](tokens[0], tokens[-1])
-        except TypeError:
+        except (TypeError, AttributeError):
             # TODO: lazy loading required
             if len(tokens) > 1:
                 result._expression = tuple(tokens)
             else:
                 result._expression = tokens[0]
         return result
+
+    def __eq__(self, other):
+        if type(self) == type(other):
+            # check operators
+            return all(
+                (self._expression[0] == other._expression[0],
+                 self.operator_map[self._expression[1]] == self.operator_map[other._expression[1]],
+                 self._expression[2] == other._expression[2],))
+        return False
