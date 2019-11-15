@@ -35,13 +35,21 @@ are excluded as those are not listed in the HTCondor Manual, those include
 import math
 import random as py_random
 from typing import TypeVar, List, Union, overload, Optional
-from builtins import int as py_int
 
-from classad._primitives import Attribute, Undefined, Error
+from classad._primitives import (
+    Attribute,
+    Undefined,
+    Error,
+    HTCFloat,
+    HTCInt,
+    HTCStr,
+    HTCBool,
+    HTCList,
+)
 
-T = TypeVar("T", float, int)
-number = Union[float, int]
-literal_type = Union[number, str, bool, Undefined, Error]
+T = TypeVar("T", HTCFloat, HTCInt)
+number = Union[HTCFloat, HTCInt]
+literal_type = Union[number, HTCStr, HTCBool, Undefined, Error]
 
 
 def eval(expression: literal_type) -> literal_type:
@@ -50,12 +58,12 @@ def eval(expression: literal_type) -> literal_type:
     result of evaluating the contents of the string as a :py:class:`~.ClassAd`
     expression.
     """
-    if isinstance(expression, (float, py_int, Undefined, Error, str, list)):
+    if isinstance(expression, (HTCFloat, HTCInt, Undefined, Error, HTCStr, HTCList)):
         return expression
     raise NotImplementedError
 
 
-def unparse(attribute: Attribute) -> str:
+def unparse(attribute: Attribute) -> HTCStr:
     """
     This function looks up the value of the provided :py:attr:`attribute` and
     returns the unparsed version as a :py:class:`str`. The attribute's value is
@@ -107,7 +115,7 @@ def ifThenElse(
         What about int?
     """
     result = eval(if_expression)
-    if isinstance(result, (str, Error)):
+    if isinstance(result, (HTCStr, Error)):
         return Error()
     if isinstance(result, Undefined):
         return Undefined()
@@ -117,7 +125,7 @@ def ifThenElse(
         return eval(else_expression)
 
 
-def isUndefined(expression: literal_type) -> Union[bool, Error]:
+def isUndefined(expression: literal_type) -> Union[HTCBool, Error]:
     """
     Returns :py:data:`True`, if :py:attr:`expression` evaluates to
     :py:class:`~.Undefined`. Returns :py:data:`False` in all other cases.
@@ -127,11 +135,11 @@ def isUndefined(expression: literal_type) -> Union[bool, Error]:
     """
     result = eval(expression)
     if isinstance(result, Undefined):
-        return True
-    return False
+        return HTCBool(1)
+    return HTCBool(0)
 
 
-def isError(expression: literal_type) -> Union[bool, Error]:
+def isError(expression: literal_type) -> Union[HTCBool, Error]:
     """
     Returns :py:data:`True` if :py:attr:`expression` evaluates to :py:class:`~.Error`.
     Returns :py:data:`False` in all other cases.
@@ -141,11 +149,11 @@ def isError(expression: literal_type) -> Union[bool, Error]:
     """
     result = eval(expression)
     if isinstance(result, Error):
-        return True
-    return False
+        return HTCBool(1)
+    return HTCBool(0)
 
 
-def isString(expression: literal_type) -> Union[bool, Error]:
+def isString(expression: literal_type) -> Union[HTCBool, Error]:
     """
     Returns :py:data:`True` if :py:attr:`expression` evaluates to a :py:class:`str`.
     Returns :py:data:`False` in all other cases.
@@ -154,12 +162,12 @@ def isString(expression: literal_type) -> Union[bool, Error]:
     argument is given.
     """
     result = eval(expression)
-    if isinstance(result, str):
-        return True
-    return False
+    if isinstance(result, HTCStr):
+        return HTCBool(1)
+    return HTCBool(0)
 
 
-def isInteger(expression: literal_type) -> Union[bool, Error]:
+def isInteger(expression: literal_type) -> Union[HTCBool, Error]:
     """
     Returns :py:data:`True` if :py:attr:`expression` evaluates to an :py:class:`int`.
     Returns :py:data:`False` in all other cases.
@@ -168,12 +176,12 @@ def isInteger(expression: literal_type) -> Union[bool, Error]:
     argument is given.
     """
     result = eval(expression)
-    if isinstance(result, py_int):
-        return True
-    return False
+    if isinstance(result, HTCInt):
+        return HTCBool(1)
+    return HTCBool(0)
 
 
-def isReal(expression: literal_type) -> Union[bool, Error]:
+def isReal(expression: literal_type) -> Union[HTCBool, Error]:
     """
     Returns :py:data:`True` if :py:attr:`expression` evaluates to  a :py:class:`float`.
     Returns :py:data:`False` in all other cases.
@@ -182,12 +190,12 @@ def isReal(expression: literal_type) -> Union[bool, Error]:
     argument is given.
     """
     result = eval(expression)
-    if isinstance(result, float):
-        return True
-    return False
+    if isinstance(result, HTCFloat):
+        return HTCBool(1)
+    return HTCBool(0)
 
 
-def isBoolean(expression: literal_type) -> Union[bool, Error]:
+def isBoolean(expression: literal_type) -> Union[HTCBool, Error]:
     """
     Returns :py:data:`True` if :py:attr:`expression` evaluates to a :py:class:`bool`.
     Returns :py:data:`False` in all other cases.
@@ -196,12 +204,12 @@ def isBoolean(expression: literal_type) -> Union[bool, Error]:
     argument is given.
     """
     result = eval(expression)
-    if isinstance(result, bool):
-        return True
-    return False
+    if isinstance(result, HTCBool):
+        return HTCBool(1)
+    return HTCBool(0)
 
 
-def int(expression: literal_type) -> Union[int, Error]:
+def int(expression: literal_type) -> Union[HTCInt, Error]:
     """
     Returns the integer value defined by :py:attr:`expression`.
     If the type of the evaluated :py:attr:`expression` is :py:class:`float`,
@@ -219,16 +227,16 @@ def int(expression: literal_type) -> Union[int, Error]:
     if isInteger(result):
         return result
     elif isReal(result):
-        return math.trunc(result)
+        return HTCInt(math.trunc(result))
     elif isString(result):
         try:
-            return py_int(result)
+            return HTCInt(result)
         except ValueError:
             pass
     return Error()
 
 
-def real(expression: literal_type) -> Union[float, Error]:
+def real(expression: literal_type) -> Union[HTCFloat, Error]:
     """
     Returns the :py:class:`float` value defined by :py:attr:`expression`.
     If the type of the evaluated :py:attr:`expression` is :py:class:`int`, the
@@ -246,16 +254,16 @@ def real(expression: literal_type) -> Union[float, Error]:
     if isReal(result):
         return result
     elif isInteger(result):
-        return float(result)
+        return HTCFloat(result)
     elif isString(result):
         try:
-            return float(result)
+            return HTCFloat(result)
         except ValueError:
             pass
     return Error()
 
 
-def string(expression: literal_type) -> Union[str, Error]:
+def string(expression: literal_type) -> Union[HTCStr, Error]:
     """
     Returns the string that results from evaluating :py:attr:`expression`.
     A non-string value is converted to a string.
@@ -270,10 +278,10 @@ def string(expression: literal_type) -> Union[str, Error]:
         return result
     elif isUndefined(result) or isError(result):
         return Error()
-    return str(result)
+    return HTCStr(result)
 
 
-def floor(expression: literal_type) -> Union[int, Error]:
+def floor(expression: literal_type) -> Union[HTCInt, Error]:
     """
     Returns the integer that results from evaluating :py:attr:`expression`, if
     the type of the evaluated :py:attr:`expression` is :py:class:`int`.
@@ -291,13 +299,13 @@ def floor(expression: literal_type) -> Union[int, Error]:
         return result
     result = real(result)
     try:
-        return math.floor(result)
+        return HTCInt(math.floor(result))
     except TypeError:
         pass
     return Error()
 
 
-def ceiling(expression: literal_type) -> Union[int, Error]:
+def ceiling(expression: literal_type) -> Union[HTCInt, Error]:
     """
     Returns the integer that results from evaluating :py:attr:`expression`, if
     the type of the evaluated :py:attr:`expression` is :py:class:`int`.
@@ -315,24 +323,24 @@ def ceiling(expression: literal_type) -> Union[int, Error]:
         return result
     result = real(result)
     try:
-        return math.ceil(result)
+        return HTCInt(math.ceil(result))
     except TypeError:
         pass
     return Error()
 
 
 @overload
-def pow(base: int, exponent: int) -> int:
+def pow(base: HTCInt, exponent: HTCInt) -> HTCInt:
     ...
 
 
 @overload
-def pow(base: int, exponent: int) -> float:
+def pow(base: HTCInt, exponent: HTCInt) -> HTCFloat:
     ...
 
 
 @overload
-def pow(base: float, exponent: float) -> float:
+def pow(base: HTCFloat, exponent: HTCFloat) -> HTCFloat:
     ...
 
 
@@ -348,18 +356,18 @@ def pow(base, exponent):
     ``1.0``, type appropriate.
     """
     result = math.pow(base, exponent)
-    if exponent >= 0 and isinstance(exponent, py_int) and isinstance(base, py_int):
-        return py_int(result)
-    return result
+    if exponent >= 0 and isinstance(exponent, HTCInt) and isinstance(base, HTCInt):
+        return HTCInt(result)
+    return HTCFloat(result)
 
 
 @overload
-def quantize(a: literal_type, b: int) -> int:
+def quantize(a: literal_type, b: HTCInt) -> HTCInt:
     ...
 
 
 @overload
-def quantize(a: literal_type, b: float) -> float:
+def quantize(a: literal_type, b: HTCFloat) -> HTCFloat:
     ...
 
 
@@ -403,7 +411,7 @@ def quantize(a, b):
         3.0   = quantize(2.7, {1, 2, 0.5})
         ERROR = quantize(3, {1, 2, "A"})
     """
-    if isinstance(b, list) or isinstance(b, tuple):
+    if isinstance(b, HTCList):
         for element in b:
             try:
                 if element >= a:
@@ -413,13 +421,13 @@ def quantize(a, b):
         return quantize(a, element)
     else:
         try:
-            quotient = a / b
+            quotient = HTCFloat(a / b)
         except TypeError:
             return Error()
         return ceiling(quotient) * b
 
 
-def round(expression: literal_type) -> Union[int, Error]:
+def round(expression: literal_type) -> Union[HTCInt, Error]:
     """
     Returns the integer that results from the evaluation of :py:attr:`expression`,
     if the type of the evaluated :py:attr:`expression` is :py:class:`int`.
@@ -457,14 +465,14 @@ def random(expression: literal_type = 1.0) -> Union[number, Error]:
     is given.
     """
     result = eval(expression)
-    if isinstance(result, py_int):
-        return py_random.randint(0, result)
-    elif isinstance(result, float):
-        return py_random.uniform(0, result)
+    if isinstance(result, HTCInt):
+        return HTCInt(py_random.randint(0, result))
+    elif isinstance(result, HTCFloat):
+        return HTCFloat(py_random.uniform(0, result))
     return Error()
 
 
-def strcat(expression: literal_type, *args: literal_type) -> Union[str, Error]:
+def strcat(expression: literal_type, *args: literal_type) -> Union[HTCStr, Error]:
     """
     Returns the string which is the concatenation of all arguments, where all
     arguments are converted to type :py:class:`str` by function :py:func:`~.string`.
@@ -475,17 +483,17 @@ def strcat(expression: literal_type, *args: literal_type) -> Union[str, Error]:
 
 
 @overload
-def join(seperator: str, *args: literal_type) -> Union[str, Error]:
+def join(seperator: HTCStr, *args: literal_type) -> Union[HTCStr, Error]:
     ...
 
 
 @overload
-def join(seperator: str, arguments: List) -> Union[str, Error]:
+def join(seperator: HTCStr, arguments: HTCList) -> Union[HTCStr, Error]:
     ...
 
 
 @overload
-def join(arguments: List) -> Union[str, Error]:
+def join(arguments: HTCList) -> Union[HTCStr, Error]:
     ...
 
 
@@ -513,13 +521,15 @@ def join(*args):
         "a;b;c"   = join(";", split("a b c"))
     """
     if len(args) == 1:
-        return "".join(args[0])
-    if len(args) == 2 and isinstance(args[1], list):
-        return args[0].join(args[1])
-    return args[0].join(args[1:])
+        return HTCStr("".join(args[0]))
+    if len(args) == 2 and isinstance(args[1], HTCList):
+        return HTCStr(args[0].join(args[1]))
+    return HTCStr(args[0].join(args[1:]))
 
 
-def substr(s: str, offset: int, length: Optional[int] = None) -> Union[str, Error]:
+def substr(
+    s: HTCStr, offset: HTCInt, length: Optional[HTCInt] = None
+) -> Union[HTCStr, Error]:
     """
     Returns the substring of :py:attr:`s`, from the position indicated by
     :py:attr:`offset`, with (optional) :py:attr:`length` characters. The first
@@ -541,7 +551,7 @@ def substr(s: str, offset: int, length: Optional[int] = None) -> Union[str, Erro
     raise NotImplementedError
 
 
-def strcmp(a: literal_type, b: literal_type) -> Union[int, Error]:
+def strcmp(a: literal_type, b: literal_type) -> Union[HTCInt, Error]:
     """
     Both arguments are converted to :py:class:`str` by function :py:func:`~.string`.
     The return value is an integer that will be
@@ -564,7 +574,7 @@ def strcmp(a: literal_type, b: literal_type) -> Union[int, Error]:
     raise NotImplementedError
 
 
-def stricmp(a: literal_type, b: literal_type) -> Union[int, Error]:
+def stricmp(a: literal_type, b: literal_type) -> Union[HTCInt, Error]:
     """
     This function is the same as :py:func:`~.strcmp`, except that letter case is
     not significant.
@@ -576,7 +586,7 @@ def stricmp(a: literal_type, b: literal_type) -> Union[int, Error]:
     raise NotImplementedError
 
 
-def toUpper(s: literal_type) -> Union[str, Error]:
+def toUpper(s: literal_type) -> Union[HTCStr, Error]:
     """
     The single argument :py:attr:`s` is converted to type :py:class:`str` by
     function :py:func:`~.string`. The return value is this string, with all lower
@@ -590,7 +600,7 @@ def toUpper(s: literal_type) -> Union[str, Error]:
     raise NotImplementedError
 
 
-def toLower(s: literal_type) -> Union[str, Error]:
+def toLower(s: literal_type) -> Union[HTCStr, Error]:
     """
     The single argument :py:attr:`s` is converted to type :py:class:`str` by
     function :py:func:`~.string`. The return value is this string, with all upper
@@ -604,7 +614,7 @@ def toLower(s: literal_type) -> Union[str, Error]:
     raise NotImplementedError
 
 
-def size(expression: literal_type) -> Union[int, Error]:
+def size(expression: literal_type) -> Union[HTCInt, Error]:
     """
     Returns the number of characters in the string, after calling function
     :py:func:`~.string`. If the argument evaluates to :py:class:`~.Error` or
@@ -616,7 +626,7 @@ def size(expression: literal_type) -> Union[int, Error]:
     raise NotImplementedError
 
 
-def split(s: str, tokens: Optional[str] = None) -> List[str]:
+def split(s: HTCStr, tokens: Optional[HTCStr] = None) -> List[HTCStr]:
     """
     Returns a list of the substrings of :py:attr:`s` that have been split up by
     using any of the characters within string :py:attr:`tokens`.
@@ -625,10 +635,10 @@ def split(s: str, tokens: Optional[str] = None) -> List[str]:
     """
     if tokens:
         raise NotImplementedError
-    return s.split()
+    return HTCList(s.split())
 
 
-def splitUserName(name: str) -> List[str]:
+def splitUserName(name: HTCStr) -> List[HTCStr]:
     """
     Returns a list of two strings. Where :py:attr:`name` includes an ``@`` character,
     the first string in the list will be the substring that comes before the
@@ -643,7 +653,7 @@ def splitUserName(name: str) -> List[str]:
     raise NotImplementedError
 
 
-def splitSlotName(name: str) -> List[str]:
+def splitSlotName(name: HTCStr) -> List[HTCStr]:
     """
     Returns a list of two strings. Where :py:attr:`name` includes an ``@``
     character, the first string in the list will be the substring that comes
@@ -658,7 +668,7 @@ def splitSlotName(name: str) -> List[str]:
     raise NotImplementedError
 
 
-def time() -> int:
+def time() -> HTCInt:
     """
     Returns the current coordinated universal time. This is the time, in seconds,
     since midnight of January 1, 1970.
@@ -666,7 +676,7 @@ def time() -> int:
     raise NotImplementedError
 
 
-def formatTime(time: Optional[int], format: Optional[str]) -> str:
+def formatTime(time: Optional[HTCInt], format: Optional[HTCStr]) -> HTCStr:
     """
     Returns a formatted string that is a representation of :py:attr:`time`. The
     argument :py:attr:`time` is interpreted as coordinated universal time in
@@ -750,7 +760,7 @@ def formatTime(time: Optional[int], format: Optional[str]) -> str:
     raise NotImplementedError
 
 
-def interval(seconds: int) -> str:
+def interval(seconds: HTCInt) -> HTCStr:
     """
     Uses :py:attr:`seconds` to return a string of the form ``days+hh:mm:ss``.
     This represents an interval of time. Leading values that are zero are
@@ -776,7 +786,7 @@ def debug(expression: literal_type) -> literal_type:
     raise NotImplementedError
 
 
-def envV1ToV2(old_env: str) -> str:
+def envV1ToV2(old_env: HTCStr) -> HTCStr:
     """
     This function converts a set of environment variables from the old HTCondor
     syntax to the new syntax. The single argument should evaluate to a string
@@ -790,7 +800,7 @@ def envV1ToV2(old_env: str) -> str:
     raise NotImplementedError
 
 
-def mergeEnvironment(env: str, *args: str) -> str:
+def mergeEnvironment(env: HTCStr, *args: HTCStr) -> HTCStr:
     """
     This function merges multiple sets of environment variables into a single
     set. If multiple arguments include the same variable, the one that appears
@@ -804,7 +814,9 @@ def mergeEnvironment(env: str, *args: str) -> str:
     raise NotImplementedError
 
 
-def stringListSize(string_list: str, delimiter: Optional[str]) -> Union[int, Error]:
+def stringListSize(
+    string_list: HTCStr, delimiter: Optional[HTCStr]
+) -> Union[HTCInt, Error]:
     """
     Returns the number of elements in the string :py:attr:`string_list`, as
     delimited by the optional :py:attr:`delimiter` string. Returns
@@ -824,15 +836,15 @@ def stringListSize(string_list: str, delimiter: Optional[str]) -> Union[int, Err
 
 @overload
 def stringListSum(
-    string_list: str, delimiter: Optional[str] = None
-) -> Union[int, Error]:
+    string_list: HTCStr, delimiter: Optional[HTCStr] = None
+) -> Union[HTCInt, Error]:
     ...
 
 
 @overload
 def stringListSum(
-    string_list: str, delimiter: Optional[str] = None
-) -> Union[float, Error]:
+    string_list: HTCStr, delimiter: Optional[HTCStr] = None
+) -> Union[HTCFloat, Error]:
     ...
 
 
@@ -854,7 +866,7 @@ def stringListSum(string_list, delimiter=None):
     raise NotImplementedError
 
 
-def stringListAvg(string_list: str, delimiter: Optional[str] = None) -> float:
+def stringListAvg(string_list: HTCStr, delimiter: Optional[HTCStr] = None) -> HTCFloat:
     """
     Sums and returns the float-valued average of all items in the string
     :py:attr:`string_list`, as delimited by the optional :py:attr:`delimiter` string.
@@ -872,7 +884,7 @@ def stringListAvg(string_list: str, delimiter: Optional[str] = None) -> float:
 
 
 def stringListMin(
-    string_list: str, delimiter: Optional[str] = None
+    string_list: HTCStr, delimiter: Optional[HTCStr] = None
 ) -> Union[number, Error, Undefined]:
     """
     Finds and returns the minimum value from all items in the string
@@ -894,7 +906,7 @@ def stringListMin(
 
 
 def stringListMax(
-    string_list: str, delimiter: Optional[str] = None
+    string_list: HTCStr, delimiter: Optional[HTCStr] = None
 ) -> Union[number, Error, Undefined]:
     """
     Finds and returns the maximum value from all items in the string
@@ -916,8 +928,8 @@ def stringListMax(
 
 
 def stringListMember(
-    x: str, string_list: str, delimiter: Optional[str] = None
-) -> Union[bool, Error]:
+    x: HTCStr, string_list: HTCStr, delimiter: Optional[HTCStr] = None
+) -> Union[HTCBool, Error]:
     """
     Returns :py:data:`True` if item :py:attr:`x` is in the string
     :py:attr:`string_list`, as delimited by the optional :py:attr:`delimiter`
@@ -936,8 +948,8 @@ def stringListMember(
 
 
 def stringListIMember(
-    x: str, string_list: str, delimiter: Optional[str] = None
-) -> Union[bool, Error]:
+    x: HTCStr, string_list: HTCStr, delimiter: Optional[HTCStr] = None
+) -> Union[HTCBool, Error]:
     """
     Same as :py:func:`~.stringListMember`, but comparison is done with
     :py:func:`~.stricmp`, so letter case is not relevant.
@@ -952,8 +964,8 @@ def stringListIMember(
 
 
 def stringListsIntersect(
-    list_a: str, list_b: str, delimiter: Optional[str] = None
-) -> Union[int, Error]:
+    list_a: HTCStr, list_b: HTCStr, delimiter: Optional[HTCStr] = None
+) -> Union[HTCInt, Error]:
     """
     Returns :py:data:`True` if the lists contain any matching elements, and
     returns :py:data:`False` if the lists do not contain any matching elements.
@@ -970,8 +982,8 @@ def stringListsIntersect(
 
 
 def regexp(
-    pattern: str, target: str, options: Optional[str] = None
-) -> Union[bool, Error]:
+    pattern: HTCStr, target: HTCStr, options: Optional[HTCStr] = None
+) -> Union[HTCBool, Error]:
     """
     Uses the description of a regular expression given by string
     :py:attr:`pattern` to scan through the string :py:attr:`target`.
@@ -1000,8 +1012,11 @@ def regexp(
 
 
 def regexps(
-    pattern: str, target: str, substitute: str, options: Optional[str] = None
-) -> Union[str, Error]:
+    pattern: HTCStr,
+    target: HTCStr,
+    substitute: HTCStr,
+    options: Optional[HTCStr] = None,
+) -> Union[HTCStr, Error]:
     """
     Uses the description of a regular expression given by string
     :py:attr:`pattern` to scan through the string :py:attr:`target`.
@@ -1029,11 +1044,11 @@ def regexps(
 
 
 def stringList_regexpMember(
-    pattern: str,
-    string_list: str,
-    delimiter: Optional[str] = None,
-    options: Optional[str] = None,
-) -> Union[bool, Error]:
+    pattern: HTCStr,
+    string_list: HTCStr,
+    delimiter: Optional[HTCStr] = None,
+    options: Optional[HTCStr] = None,
+) -> Union[HTCBool, Error]:
     """
     Uses the description of a regular expression given by string
     :py:attr:`pattern` to scan through the list of strings in :py:attr:`string_list`.
@@ -1065,7 +1080,7 @@ def stringList_regexpMember(
     raise NotImplementedError
 
 
-def userHome(userName: str, default: Optional[str] = None) -> str:
+def userHome(userName: HTCStr, default: Optional[HTCStr] = None) -> HTCStr:
     """
     Returns the home directory of the given user as configured on the current
     system (determined using the getpwdnam() call).
@@ -1076,7 +1091,7 @@ def userHome(userName: str, default: Optional[str] = None) -> str:
 
 
 @overload
-def userMap(mapSetName: str, userName: str) -> List:
+def userMap(mapSetName: HTCStr, userName: HTCStr) -> HTCList:
     """
     Map an input string using the given mapping set. Returns a list of groups
     to which the user belongs.
@@ -1086,8 +1101,8 @@ def userMap(mapSetName: str, userName: str) -> List:
 
 @overload
 def userMap(
-    mapSetName: str, userName: str, preferredGroup: str
-) -> Union[str, Undefined]:
+    mapSetName: HTCStr, userName: HTCStr, preferredGroup: HTCStr
+) -> Union[HTCStr, Undefined]:
     """
     Map an input string using the given mapping set. Returns a string, which is
     the preferred group if the user is in that group; otherwise it is the first
@@ -1099,8 +1114,8 @@ def userMap(
 
 @overload
 def userMap(
-    mapSetName: str, userName: str, preferredGroup: str, defaultGroup: str
-) -> str:
+    mapSetName: HTCStr, userName: HTCStr, preferredGroup: HTCStr, defaultGroup: HTCStr
+) -> HTCStr:
     """
     Map an input string using the given mapping set. Returns a string, which is
     the preferred group if the user is in that group; the first group to which
