@@ -11,9 +11,25 @@ class Undefined:
     def __eq__(self, other):
         return Undefined()
 
-    __add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __truediv__ = \
-        __rtruediv__ = __lt__ = __le__ = __ge__ = __gt__ = __ne__ = __and__ = \
-        __rand__ = __or__ = __ror__ = __eq__
+    __add__ = (
+        __radd__
+    ) = (
+        __sub__
+    ) = (
+        __rsub__
+    ) = (
+        __mul__
+    ) = (
+        __rmul__
+    ) = (
+        __truediv__
+    ) = (
+        __rtruediv__
+    ) = (
+        __lt__
+    ) = (
+        __le__
+    ) = __ge__ = __gt__ = __ne__ = __and__ = __rand__ = __or__ = __ror__ = __eq__
 
     def __is__(self, other):
         if type(self) == type(other):
@@ -28,12 +44,29 @@ class Error:
     """
     The keyword ``ERROR`` (case insensitive) represents the ``ERROR`` value.
     """
+
     def __eq__(self, other):
         return Error()
 
-    __add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __truediv__ = \
-        __rtruediv__ = __lt__ = __le__ = __ge__ = __gt__ = __ne__ = __and__ = \
-        __rand__ = __or__ = __ror__ = __eq__
+    __add__ = (
+        __radd__
+    ) = (
+        __sub__
+    ) = (
+        __rsub__
+    ) = (
+        __mul__
+    ) = (
+        __rmul__
+    ) = (
+        __truediv__
+    ) = (
+        __rtruediv__
+    ) = (
+        __lt__
+    ) = (
+        __le__
+    ) = __ge__ = __gt__ = __ne__ = __and__ = __rand__ = __or__ = __ror__ = __eq__
 
     def __is__(self, other):
         if type(self) == type(other):
@@ -46,11 +79,14 @@ class Error:
 
 class Attribute:
     """An attribute is the tuple from attribute name and expression."""
+
     pass
 
 
 class HTCInt(int):
     def __add__(self, other):
+        if isinstance(other, int):
+            return HTCInt(super().__add__(other))
         return NotImplemented
 
     def __mul__(self, other):
