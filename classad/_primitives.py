@@ -7,8 +7,13 @@ class Undefined:
     """
     The keyword ``UNDEFINED`` (case insensitive) represents the ``UNDEFINED`` value.
     """
+
     def __eq__(self, other):
         return Undefined()
+
+    __add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __truediv__ = \
+        __rtruediv__ = __lt__ = __le__ = __ge__ = __gt__ = __ne__ = __and__ = \
+        __rand__ = __or__ = __ror__ = __eq__
 
     def __is__(self, other):
         if type(self) == type(other):
@@ -24,7 +29,19 @@ class Error:
     The keyword ``ERROR`` (case insensitive) represents the ``ERROR`` value.
     """
     def __eq__(self, other):
-        return type(self) == type(other)
+        return Error()
+
+    __add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __truediv__ = \
+        __rtruediv__ = __lt__ = __le__ = __ge__ = __gt__ = __ne__ = __and__ = \
+        __rand__ = __or__ = __ror__ = __eq__
+
+    def __is__(self, other):
+        if type(self) == type(other):
+            return HTCBool(1)
+        return HTCBool(0)
+
+    def __isnt__(self, other):
+        return not self.__is__(other)
 
 
 class Attribute:
@@ -33,6 +50,9 @@ class Attribute:
 
 
 class HTCInt(int):
+    def __add__(self, other):
+        return NotImplemented
+
     def __mul__(self, other):
         if isinstance(other, int):
             return HTCInt(super().__mul__(other))
@@ -52,6 +72,12 @@ class HTCInt(int):
         if isinstance(result, bool):
             return not result
         return result
+
+    def __truediv__(self, other):
+        try:
+            return super().__truediv__(other)
+        except ZeroDivisionError:
+            return Error()
 
     def __is__(self, other):
         """Case-sensitive comparison"""
