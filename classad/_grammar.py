@@ -8,6 +8,7 @@ from classad._expression import (
     ArithmeticExpression,
     SubscriptableExpression,
     TernaryExpression,
+    NamedExpression,
 )
 from classad._primitives import (
     Error,
@@ -36,8 +37,15 @@ boolean_literal = pp.oneOf("true false", caseless=True, asKeyword=True).setParse
 )
 error_literal = pp.CaselessKeyword("error").setParseAction(lambda: Error())
 undefined_literal = pp.CaselessKeyword("undefined").setParseAction(lambda: Undefined())
-parent_literal = pp.CaselessKeyword("parent")
-target_literal = pp.CaselessKeyword("target")
+parent_literal = pp.CaselessKeyword("parent").setParseAction(
+    lambda s, l, t: NamedExpression.from_grammar(t[0])
+)
+target_literal = pp.CaselessKeyword("target").setParseAction(
+    lambda s, l, t: NamedExpression.from_grammar(t[0])
+)
+super_literal = pp.CaselessKeyword("super").setParseAction(
+    lambda s, l, t: NamedExpression.from_grammar(t[0])
+)
 
 # Tokens
 octal_digit = pp.srange("[0-7]")
@@ -50,6 +58,7 @@ reserved_word = (
     | pp.CaselessKeyword("is")
     | parent_literal
     | undefined_literal
+    | super_literal
 ).setName("reserved_word")
 punctuation = pp.oneOf("= ( ) { } [ ] , ;").setName("punctuation")
 integer_literal = (
@@ -138,6 +147,7 @@ atom = (
     | error_literal
     | undefined_literal
     | parent_literal
+    | super_literal
     | function_call
     | record_expression
     | literal
@@ -149,6 +159,7 @@ subscriptable = (  # introduced to remove recursion in suffix_expression
     | error_literal
     | undefined_literal
     | parent_literal
+    | super_literal
     | target_literal
     | function_call
     | attribute_name
@@ -156,9 +167,19 @@ subscriptable = (  # introduced to remove recursion in suffix_expression
     | LPAR + expression + RPAR
 ).setName("subscriptable")
 suffix_expression << (
-    pp.Group(subscriptable + pp.Suppress(".") + attribute_name).setParseAction(
-        lambda s, l, t: Expression.from_grammar(t[0])
-    )
+    pp.Group(
+        "."
+        + pp.delimitedList(attribute_name, ".").setParseAction(
+            lambda s, l, t: AttributeExpression.from_grammar(t)
+        )
+    ).setParseAction(lambda s, l, t: AttributeExpression.from_grammar(t[0]))
+    | pp.Group(
+        subscriptable
+        + pp.Suppress(".")
+        + pp.delimitedList(attribute_name, ".").setParseAction(
+            lambda s, l, t: AttributeExpression.from_grammar(t)
+        )
+    ).setParseAction(lambda s, l, t: AttributeExpression.from_grammar(t[0]))
     | pp.Group(subscriptable + LBRACKET + expression + RBRACKET).setParseAction(
         lambda s, l, t: SubscriptableExpression.from_grammar(t[0])
     )
