@@ -1,10 +1,10 @@
 from collections import OrderedDict
 from collections.abc import MutableMapping
 from typing import Iterator, Any, TYPE_CHECKING
+from classad._primitives import Undefined
 
 if TYPE_CHECKING:
     from classad._expression import Expression
-    from classad._primitives import Undefined
 
 
 class ClassAd(MutableMapping):
@@ -30,6 +30,7 @@ class ClassAd(MutableMapping):
         self._data.pop(key, None)
 
     def __getitem__(self, key: str) -> "Expression":
+        key = key.casefold()
         return self._data.get(key, Undefined())
 
     def __len__(self) -> int:
