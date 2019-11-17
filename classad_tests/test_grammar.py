@@ -1,5 +1,6 @@
 from classad import _grammar, quantize, parse
 from classad._classad import ClassAd
+from classad._expression import ArithmeticExpression
 from classad._primitives import Error, Undefined, HTCInt, HTCFloat, HTCList, HTCStr
 
 
@@ -18,12 +19,18 @@ class TestGrammar(object):
         Requirements = TARGET.Owner=="smith" || LoadAvg<=0.3 && KeyboardIdle>15*60
         """
         result = _grammar.expression.parseString(classad, parseAll=True)
-        print(result)
         assert isinstance(result[0], ClassAd)
         keys = result[0].keys()
         assert 10, len(keys)
         assert 35882, result[0]["Disk"]
         assert 0.1, result[0]["LoadAvg"]
+
+        classad = """
+        Requirements = (Arch == "INTEL") && (OpSys == "LINUX")
+        Rank         = TARGET.Memory + TARGET.Mips
+        """
+        result = parse(classad)
+        assert isinstance(result["requirements"], ArithmeticExpression)
 
     def test_old_and_new(self):
         old = r"""
@@ -131,3 +138,18 @@ class TestGrammar(object):
         assert parse('"ABC" =!= "abc"')
         assert parse("(10 =!= UNDEFINED)")
         assert not parse("(UNDEFINED =!= UNDEFINED)")
+
+        assert parse("10 + undefined") == Undefined()
+        assert parse("error / 3.14") == Error()
+        assert parse('10 * "foo"') == Error()
+        assert parse("17 / 0") == Error()
+
+        assert parse("true?10:undefined") == 10
+        assert parse('false?error:"foo"') == "foo"
+        assert not parse("undefined is 10")
+        assert parse("error is error")
+
+    def test_aggregates(self):
+        result = parse("{ 10, [foo={10}], {17, [bar=3]} }")
+        assert len(result) == 3
+        assert parse("{10, 17*2, 30}[1]") == 34
