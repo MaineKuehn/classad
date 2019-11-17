@@ -145,7 +145,7 @@ class ArithmeticExpression(Expression):
         "=!=": evaluate_isnt_operator,
         "isnt": evaluate_isnt_operator,
         "=?=": evaluate_is_operator,
-        "is": evaluate_is_operator
+        "is": evaluate_is_operator,
     }
 
     @classmethod
@@ -165,7 +165,11 @@ class ArithmeticExpression(Expression):
         if type(self) == type(other):
             # check operators
             return all(
-                (self._expression[0] == other._expression[0],
-                 self.operator_map[self._expression[1]] == self.operator_map[other._expression[1]],
-                 self._expression[2] == other._expression[2],))
+                (
+                    self._expression[0] == other._expression[0],
+                    self.operator_map[self._expression[1]]
+                    == self.operator_map[other._expression[1]],
+                    self._expression[2] == other._expression[2],
+                )
+            )
         return False
