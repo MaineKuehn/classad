@@ -2,8 +2,13 @@ import operator
 import pyparsing as pp
 from typing import Any
 
+from classad._primitives import Undefined, Error
 from . import _functions
 from ._classad import ClassAd
+
+
+def scope_up(key: str):
+    return ".".join(key.split(".")[:-1])
 
 
 def evaluate_isnt_operator(a, b):
@@ -18,7 +23,9 @@ class Expression:
     def __init__(self):
         self._expression = None
 
-    def evaluate(self, my: ClassAd, target: ClassAd) -> Any:
+    def evaluate(
+        self, key: str = None, my: ClassAd = None, target: ClassAd = None
+    ) -> Any:
         return NotImplemented
 
     @classmethod
@@ -37,6 +44,14 @@ class Expression:
         return type(self) == type(other) and self._expression == other._expression
 
 
+class NamedExpression(Expression):
+    @classmethod
+    def from_grammar(cls, tokens):
+        result = cls()
+        result._expression = tokens
+        return result
+
+
 class FunctionExpression(Expression):
     def __init__(self, name, args):
         super().__init__()
@@ -50,7 +65,9 @@ class FunctionExpression(Expression):
             and self._name == other._name
         )
 
-    def evaluate(self, my: ClassAd, target: ClassAd) -> Any:
+    def evaluate(
+        self, key: str = None, my: ClassAd = None, target: ClassAd = None
+    ) -> Any:
         expression = []
         for element in self._expression:
             if isinstance(element, Expression):
@@ -74,6 +91,21 @@ class TernaryExpression(Expression):
             return tokens[1]
         else:
             return tokens[2]
+
+
+class DotExpression(Expression):
+    def evaluate(
+        self, key: str = None, my: ClassAd = None, target: ClassAd = None
+    ) -> Any:
+        checked = set()
+        to_check = self._expression[1]
+        while isinstance(to_check, AttributeExpression):
+            if to_check._expression not in checked:
+                checked.add(to_check._expression)
+                to_check = self._expression[0][to_check._expression]
+            else:
+                return Undefined()
+        return to_check
 
 
 class SubscriptableExpression(Expression):
@@ -131,6 +163,63 @@ class AttributeExpression(Expression):
     def __is__(self, other):
         raise TypeError
 
+    def evaluate(
+        self, key: str = None, my: ClassAd = None, target: ClassAd = None
+    ) -> Any:
+        def find_scope(current_key):
+            if len(current_key) > 0:
+                return my[current_key]
+            return my
+
+        value = Undefined()
+        if self._expression[0] == ".":
+            key = scope_up(self._expression[1])
+            expression = self._expression[1].split(".")[-1]
+        elif self._expression[0] == "super":
+            key = scope_up(key)
+            expression = self._expression[1]
+        else:
+            expression = self._expression
+        try:
+            context = find_scope(key)
+        except TypeError:
+            return Error()
+        while isinstance(value, Undefined):
+            value = context[expression]
+            if isinstance(value, Undefined):
+                if len(key) == 0:
+                    return Undefined()
+                key = scope_up(key)
+                context = find_scope(key)
+        if isinstance(value, AttributeExpression):
+            return value.evaluate(key=key, my=my, target=target)
+        return value
+
+    @classmethod
+    def from_grammar(cls, tokens):
+        result = cls()
+        if isinstance(tokens, pp.ParseResults):
+            if isinstance(tokens[0], ClassAd):
+                result = DotExpression()
+                result._expression = tokens
+            elif isinstance(tokens[0], str) and tokens[0] == ".":
+                result._expression = ["."]
+                tokens = tokens[1:]
+                result._expression.append(
+                    ".".join([token._expression for token in tokens])
+                )
+            elif isinstance(tokens[0], NamedExpression):
+                result._expression = [tokens[0]._expression]
+                tokens = tokens[1:]
+                result._expression.append(
+                    ".".join([token._expression for token in tokens])
+                )
+            else:
+                result._expression = ".".join([token._expression for token in tokens])
+        else:
+            result._expression = tokens
+        return result
+
 
 class ArithmeticExpression(Expression):
     operator_map = {
@@ -156,14 +245,20 @@ class ArithmeticExpression(Expression):
     def from_grammar(cls, tokens):
         result = cls()
         try:
-            return cls.operator_map[tokens[1]](tokens[0], tokens[-1])
-        except (TypeError, AttributeError):
+            return result._calculate(tokens[0], tokens[-1], tokens[1])
+        except NotImplementedError:
             # TODO: lazy loading required
             if len(tokens) > 1:
                 result._expression = tuple(tokens)
             else:
                 result._expression = tokens[0]
         return result
+
+    def _calculate(self, first, second, operand):
+        try:
+            return self.operator_map[operand](first, second)
+        except (ArithmeticError, AttributeError, TypeError):
+            raise NotImplementedError
 
     def __eq__(self, other):
         if type(self) == type(other):
@@ -177,3 +272,14 @@ class ArithmeticExpression(Expression):
                 )
             )
         return False
+
+    def evaluate(
+        self, key: str = None, my: ClassAd = None, target: ClassAd = None
+    ) -> Any:
+        result = self._expression[0].evaluate(key=key, my=my, target=target)
+        for position in range(0, len(self._expression) - 1, 2):
+            second = self._expression[position + 2].evaluate(
+                key=key, my=my, target=target
+            )
+            result = self._calculate(result, second, self._expression[position + 1])
+        return result

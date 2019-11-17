@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from collections.abc import MutableMapping
 from typing import Iterator, Any, TYPE_CHECKING
-from classad._primitives import Undefined
+from classad._primitives import Undefined, Error
 
 if TYPE_CHECKING:
     from classad._expression import Expression
@@ -9,6 +9,11 @@ if TYPE_CHECKING:
 
 class ClassAd(MutableMapping):
     __slots__ = "_data"
+
+    def __add__(self, other):
+        return Error()
+
+    __sub__ = __rsub__ = __radd__ = __add__
 
     def __init__(self):
         self._data = OrderedDict()
@@ -31,7 +36,14 @@ class ClassAd(MutableMapping):
 
     def __getitem__(self, key: str) -> "Expression":
         key = key.casefold()
-        return self._data.get(key, Undefined())
+        keys = key.split(".")
+        expression = self._data
+        for key in keys:
+            try:
+                expression = expression[key]
+            except KeyError:
+                return Undefined()
+        return expression
 
     def __len__(self) -> int:
         return len(self._data)
@@ -39,7 +51,7 @@ class ClassAd(MutableMapping):
     def __iter__(self) -> Iterator[str]:
         return iter(self._data)
 
-    def evaluate(self, key: str, target: "ClassAd") -> Any:
+    def evaluate(self, key: str = None, target: "ClassAd" = None) -> Any:
         """
         Perform a matchmaking between an expression defined by the named attribute
         key in the context of the target ClassAd.
@@ -48,13 +60,13 @@ class ClassAd(MutableMapping):
         :return:
         """
         expression = self[key]
-        return expression.evaluate(my=self, target=target)
+        new_key = ".".join(key.split(".")[:-1])
+        return expression.evaluate(key=new_key, my=self, target=target)
 
     @classmethod
     def from_grammar(cls, tokens):
         result = cls()
         for token in tokens:
-            print(token)
             result[token[0]] = token[1]
         return result
 
