@@ -8,9 +8,6 @@ from ._classad import ClassAd
 
 def evaluate_isnt_operator(a, b):
     return a.__isnt__(b)
-    if type(a) == type(b) and a == b:
-        return False
-    return True
 
 
 def evaluate_is_operator(a, b):
@@ -45,6 +42,13 @@ class FunctionExpression(Expression):
         super().__init__()
         self._name = name
         self._expression = args
+
+    def __eq__(self, other):
+        return (
+            type(self) == type(other)
+            and self._expression == other._expression
+            and self._name == other._name
+        )
 
     def evaluate(self, my: ClassAd, target: ClassAd) -> Any:
         expression = []
@@ -82,16 +86,16 @@ class SubscriptableExpression(Expression):
 
 class AttributeExpression(Expression):
     def __add__(self, other):
-        raise TypeError
+        raise ArithmeticError
 
     def __sub__(self, other):
-        raise TypeError
+        raise ArithmeticError
 
     def __mul__(self, other):
-        raise TypeError
+        raise ArithmeticError
 
     def __truediv__(self, other):
-        raise TypeError
+        raise ArithmeticError
 
     def __lt__(self, other):
         raise TypeError
@@ -116,10 +120,10 @@ class AttributeExpression(Expression):
         raise TypeError
 
     def __and__(self, other):
-        raise TypeError
+        raise ArithmeticError
 
     def __or__(self, other):
-        raise TypeError
+        raise ArithmeticError
 
     def __isnt__(self, other):
         raise TypeError

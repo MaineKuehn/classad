@@ -22,8 +22,8 @@ class TestGrammar(object):
         assert isinstance(result[0], ClassAd)
         keys = result[0].keys()
         assert 10, len(keys)
-        assert 35882, result[0]["Disk"]
-        assert 0.1, result[0]["LoadAvg"]
+        assert 35882, keys["Disk"]
+        assert 0.1, keys["LoadAvg"]
 
         classad = """
         Requirements = (Arch == "INTEL") && (OpSys == "LINUX")
