@@ -6,6 +6,8 @@ from classad._expression import (
     AttributeExpression,
     FunctionExpression,
     ArithmeticExpression,
+    SubscriptableExpression,
+    TernaryExpression,
 )
 from classad._primitives import (
     Error,
@@ -155,9 +157,11 @@ subscriptable = (  # introduced to remove recursion in suffix_expression
 ).setName("subscriptable")
 suffix_expression << (
     pp.Group(subscriptable + pp.Suppress(".") + attribute_name).setParseAction(
-        lambda s, l, t: AttributeExpression.from_grammar(t[0])
+        lambda s, l, t: Expression.from_grammar(t[0])
     )
-    | subscriptable + LBRACKET + expression + RBRACKET
+    | pp.Group(subscriptable + LBRACKET + expression + RBRACKET).setParseAction(
+        lambda s, l, t: SubscriptableExpression.from_grammar(t[0])
+    )
     | atom
 ).setName("suffix_expression")
 
@@ -182,11 +186,13 @@ arithmetic_expression << pp.infixNotation(
 )
 
 expression << pp.Group(
-    pp.Group(arithmetic_expression)("if")
-    + pp.Suppress("?")
-    + pp.Group(expression)("then")
-    + pp.Suppress(":")
-    + pp.Group(expression)("else")
+    (
+        pp.Group(arithmetic_expression)("if")
+        + pp.Suppress("?")
+        + pp.Group(expression)("then")
+        + pp.Suppress(":")
+        + pp.Group(expression)("else")
+    ).setParseAction(lambda s, l, t: TernaryExpression.from_grammar(t))
     | arithmetic_expression
 ).setParseAction(lambda s, l, t: Expression.from_grammar(t[0])).setName("expression")
 

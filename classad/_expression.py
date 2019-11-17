@@ -63,6 +63,23 @@ class FunctionExpression(Expression):
         return f"<{self.__class__.__name__}>: {self._name}{self._expression}"
 
 
+class TernaryExpression(Expression):
+    @classmethod
+    def from_grammar(cls, tokens):
+        if tokens[0]:
+            return tokens[1]
+        else:
+            return tokens[2]
+
+
+class SubscriptableExpression(Expression):
+    @classmethod
+    def from_grammar(cls, tokens):
+        if len(tokens) == 2:
+            return tokens[0][tokens[1]]
+        return NotImplemented
+
+
 class AttributeExpression(Expression):
     def __add__(self, other):
         raise TypeError
