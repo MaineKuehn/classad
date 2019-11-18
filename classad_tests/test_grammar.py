@@ -45,114 +45,83 @@ class TestGrammar(object):
         Moo = Foo isnt Undefined;
         ]
         """
-        old_result = _grammar.expression.parseString(old, parseAll=True)
-        new_result = _grammar.expression.parseString(new, parseAll=True)
-        assert old_result[0] == new_result[0]
+        old_result = parse(old)
+        new_result = parse(new)
+        assert old_result == new_result
 
     def test_quantize(self):
-        assert _grammar.expression.parseString("quantize(3, 8)")[
-            0
-        ].evaluate() == quantize(HTCInt(3), HTCInt(8))
-        assert _grammar.expression.parseString("quantize(3, 2)")[
-            0
-        ].evaluate() == quantize(HTCInt(3), HTCInt(2))
-        assert _grammar.expression.parseString("quantize(0, 4)")[
-            0
-        ].evaluate() == quantize(HTCInt(0), HTCInt(4))
-        assert _grammar.expression.parseString("quantize(1.5, 6.8)")[
-            0
-        ].evaluate() == quantize(HTCFloat(1.5), HTCFloat(6.8))
-        assert _grammar.expression.parseString("quantize(6.8, 1.2)")[
-            0
-        ].evaluate() == quantize(HTCFloat(6.8), HTCFloat(1.2))
-        assert _grammar.expression.parseString("quantize(10, 5.1)")[
-            0
-        ].evaluate() == quantize(HTCInt(10), HTCFloat(5.1))
-        assert _grammar.expression.parseString("quantize(0, {4})")[
-            0
-        ].evaluate() == quantize(HTCInt(0), HTCList([HTCInt(4)]))
-        assert _grammar.expression.parseString('quantize(2, {1, 2, "A"})')[
-            0
-        ].evaluate() == quantize(
+        assert parse("quantize(3, 8)").evaluate() == quantize(HTCInt(3), HTCInt(8))
+        assert parse("quantize(3, 2)").evaluate() == quantize(HTCInt(3), HTCInt(2))
+        assert parse("quantize(0, 4)").evaluate() == quantize(HTCInt(0), HTCInt(4))
+        assert parse("quantize(1.5, 6.8)").evaluate() == quantize(HTCFloat(1.5), HTCFloat(6.8))
+        assert parse("quantize(6.8, 1.2)").evaluate() == quantize(HTCFloat(6.8), HTCFloat(1.2))
+        assert parse("quantize(10, 5.1)").evaluate() == quantize(HTCInt(10), HTCFloat(5.1))
+        assert parse("quantize(0, {4})").evaluate() == quantize(HTCInt(0), HTCList([HTCInt(4)]))
+        assert parse('quantize(2, {1, 2, "A"})').evaluate() == quantize(
             HTCInt(2), HTCList([HTCInt(1), HTCInt(2), HTCStr("A")])
         )
-        assert _grammar.expression.parseString("quantize(3, {1, 2, 0.5})")[
-            0
-        ].evaluate() == quantize(
+        assert parse("quantize(3, {1, 2, 0.5})").evaluate() == quantize(
             HTCInt(3), HTCList([HTCInt(1), HTCInt(2), HTCFloat(0.5)])
         )
-        assert _grammar.expression.parseString("quantize(2.7, {1, 2, 0.5})")[
-            0
-        ].evaluate() == quantize(
+        assert parse("quantize(2.7, {1, 2, 0.5})").evaluate() == quantize(
             HTCFloat(2.7), HTCList([HTCInt(1), HTCInt(2), HTCFloat(0.5)])
         )
-        assert _grammar.expression.parseString('quantize(3, {1, 2, "A"})')[
-            0
-        ].evaluate() == quantize(
+        assert parse('quantize(3, {1, 2, "A"})').evaluate() == quantize(
             HTCInt(3), HTCList([HTCInt(1), HTCInt(2), HTCStr("A")])
         )
 
     def test_join(self):
-        assert (
-            _grammar.expression.parseString('join(", ", "a", "b", "c")')[0].evaluate()
-            == "a, b, c"
-        )
-        assert (
-            _grammar.expression.parseString('join(split("a b c"))')[0].evaluate()
-            == "abc"
-        )
-        assert (
-            _grammar.expression.parseString('join(";", split("a b c"))')[0].evaluate()
-            == "a;b;c"
-        )
+        assert parse('join(", ", "a", "b", "c")').evaluate() == "a, b, c"
+        assert parse('join(split("a b c"))').evaluate() == "abc"
+        assert parse('join(";", split("a b c"))').evaluate() == "a;b;c"
 
     def test_parse(self):
         classad = "[a = 1; b = 2]"
         assert _grammar.expression.parseString(classad)[0] == parse(classad)
 
     def test_example_expressions(self):
-        assert parse("(10 == 10)")
-        assert not parse("(10 == 5)")
-        assert parse('(10 == "ABC")') == Error()
-        assert parse('"ABC" == "abc"')
-        assert parse("(10 == UNDEFINED)") == Undefined()
-        assert parse("(UNDEFINED == UNDEFINED)") == Undefined()
+        assert parse("(10 == 10)").evaluate()
+        assert not parse("(10 == 5)").evaluate()
+        assert parse('(10 == "ABC")').evaluate() == Error()
+        assert parse('"ABC" == "abc"').evaluate()
+        assert parse("(10 == UNDEFINED)").evaluate() == Undefined()
+        assert parse("(UNDEFINED == UNDEFINED)").evaluate() == Undefined()
 
-        assert parse("(10 =?= 10)")
-        assert not parse("(10 =?= 5)")
-        assert not parse('(10 =?= "ABC")')
-        assert not parse('"ABC" =?= "abc"')
-        assert not parse("(10 =?= UNDEFINED)")
-        assert parse("(UNDEFINED =?= UNDEFINED)")
+        assert parse("(10 =?= 10)").evaluate()
+        assert not parse("(10 =?= 5)").evaluate()
+        assert not parse('(10 =?= "ABC")').evaluate()
+        assert not parse('"ABC" =?= "abc"').evaluate()
+        assert not parse("(10 =?= UNDEFINED)").evaluate()
+        assert parse("(UNDEFINED =?= UNDEFINED)").evaluate()
 
-        assert not parse("(10 != 10)")
-        assert parse("(10 != 5)")
-        assert parse('(10 != "ABC")') == Error()
-        assert not parse('"ABC" != "abc"')
-        assert parse("(10 != UNDEFINED)") == Undefined()
-        assert parse("(UNDEFINED != UNDEFINED)") == Undefined()
+        assert not parse("(10 != 10)").evaluate()
+        assert parse("(10 != 5)").evaluate
+        assert parse('(10 != "ABC")').evaluate() == Error()
+        assert not parse('"ABC" != "abc"').evaluate()
+        assert parse("(10 != UNDEFINED)").evaluate() == Undefined()
+        assert parse("(UNDEFINED != UNDEFINED)").evaluate() == Undefined()
 
-        assert not parse("(10 =!= 10)")
-        assert parse("(10 =!= 5)")
-        assert parse('(10 =!= "ABC")')
-        assert parse('"ABC" =!= "abc"')
-        assert parse("(10 =!= UNDEFINED)")
-        assert not parse("(UNDEFINED =!= UNDEFINED)")
+        assert not parse("(10 =!= 10)").evaluate()
+        assert parse("(10 =!= 5)").evaluate()
+        assert parse('(10 =!= "ABC")').evaluate()
+        assert parse('"ABC" =!= "abc"').evaluate()
+        assert parse("(10 =!= UNDEFINED)").evaluate()
+        assert not parse("(UNDEFINED =!= UNDEFINED)").evaluate()
 
-        assert parse("10 + undefined") == Undefined()
-        assert parse("error / 3.14") == Error()
-        assert parse('10 * "foo"') == Error()
-        assert parse("17 / 0") == Error()
+        assert parse("10 + undefined").evaluate() == Undefined()
+        assert parse("error / 3.14").evaluate() == Error()
+        assert parse('10 * "foo"').evaluate() == Error()
+        assert parse("17 / 0").evaluate() == Error()
 
-        assert parse("true?10:undefined") == 10
-        assert parse('false?error:"foo"') == "foo"
-        assert not parse("undefined is 10")
-        assert parse("error is error")
+        assert parse("true?10:undefined").evaluate() == 10
+        assert parse('false?error:"foo"').evaluate() == "foo"
+        assert not parse("undefined is 10").evaluate()
+        assert parse("error is error").evaluate()
 
     def test_aggregates(self):
         result = parse("{ 10, [foo={10}], {17, [bar=3]} }")
         assert len(result) == 3
-        assert parse("{10, 17*2, 30}[1]") == 34
+        assert parse("{10, 17*2, 30}[1]").evaluate() == 34
 
     def test_attribute_references(self):
         assert parse("[a=1;b=a]").evaluate(key="b") == 1
