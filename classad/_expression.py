@@ -250,10 +250,9 @@ class AttributeExpression(Expression):
             elif isinstance(tokens[0], str) and tokens[0] == ".":
                 result._expression = tuple([tokens[0], tokens[1]._expression])
             elif isinstance(tokens[0], NamedExpression):
-                expression = [tokens[0]._expression]
-                tokens = tokens[1:]
-                expression.extend([token._expression for token in tokens])
-                result._expression = tuple(expression)
+                result._expression = tuple(
+                    [tokens[0]._expression, tokens[1]._expression]
+                )
             else:
                 result._expression = tuple(token._expression for token in tokens)
         else:
