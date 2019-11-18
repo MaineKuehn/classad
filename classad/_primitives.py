@@ -92,59 +92,114 @@ class Attribute:
 
 class HTCInt(int, PrimitiveExpression):
     def __add__(self, other):
-        if isinstance(other, int):
+        if isinstance(other, HTCInt):
             return HTCInt(super().__add__(other))
-        return NotImplemented
+        elif (
+            isinstance(other, HTCFloat)
+            or isinstance(other, Undefined)
+            or isinstance(other, Error)
+        ):
+            return NotImplemented
+        return Error()
+
+    def __sub__(self, other):
+        if isinstance(other, HTCInt):
+            return HTCInt(super().__sub__(other))
+        elif (
+            isinstance(other, HTCFloat)
+            or isinstance(other, Undefined)
+            or isinstance(other, Error)
+        ):
+            return NotImplemented
+        return Error()
 
     def __mul__(self, other):
-        if isinstance(other, int):
+        if isinstance(other, HTCInt):
             return HTCInt(super().__mul__(other))
-        elif isinstance(other, float):
-            return HTCFloat(other * int(self))
-        return NotImplemented
-
-    def __eq__(self, other):
-        if isinstance(other, Undefined):
-            return Undefined()
-        if not isinstance(other, int):
-            return Error()
-        return super().__eq__(other)
-
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if isinstance(result, bool):
-            return not result
-        return result
+        elif (
+            isinstance(other, HTCFloat)
+            or isinstance(other, Undefined)
+            or isinstance(other, Error)
+        ):
+            return NotImplemented
+        return Error()
 
     def __truediv__(self, other):
         try:
-            return super().__truediv__(other)
+            if isinstance(other, HTCInt):
+                return HTCFloat(super().__truediv__(other))
+            elif (
+                isinstance(other, HTCFloat)
+                or isinstance(other, Undefined)
+                or isinstance(other, Error)
+            ):
+                return NotImplemented
+            return Error()
         except ZeroDivisionError:
             return Error()
+
+    def __lt__(self, other):
+        try:
+            return HTCBool(super().__lt__(other))
+        except TypeError:
+            return Error()
+
+    def __ge__(self, other):
+        result = self.__lt__(other)
+        if isinstance(result, HTCBool):
+            return HTCBool(not result)
+        return result
+
+    def __gt__(self, other):
+        try:
+            return HTCBool(super().__gt__(other))
+        except TypeError:
+            return Error()
+
+    def __le__(self, other):
+        result = self.__gt__(other)
+        if isinstance(result, HTCBool):
+            return HTCBool(not result)
+        return result
+
+    def __eq__(self, other):
+        if type(self) == type(other) or isinstance(other, HTCFloat):
+            return HTCBool(super().__eq__(other))
+        elif isinstance(other, Undefined) or isinstance(other, Error):
+            return NotImplemented
+        return Error()
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if isinstance(result, HTCBool):
+            return HTCBool(not result)
+        return result
 
     def __is__(self, other):
         """Case-sensitive comparison"""
         if type(self) == type(other) and self == other:
-            return HTCBool(1)
-        return HTCBool(0)
+            return HTCBool(True)
+        return HTCBool(False)
 
     def __isnt__(self, other):
         if type(self) != type(other) or self != other:
-            return HTCBool(1)
-        return HTCBool(0)
+            return HTCBool(True)
+        return HTCBool(False)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>: {self}"
 
 
 class HTCList(tuple, PrimitiveExpression):
-    pass
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>: {[element for element in self]}"
 
 
 class HTCStr(str, PrimitiveExpression):
     def __eq__(self, other):
-        if isinstance(other, Undefined):
-            return Undefined()
         if isinstance(other, str):
             return self.lower() == other.lower()
-        return super().__eq__(other)
+        return NotImplemented
 
     def __ne__(self, other):
         result = self.__eq__(other)
@@ -162,18 +217,22 @@ class HTCStr(str, PrimitiveExpression):
             return HTCBool(1)
         return HTCBool(0)
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>: {self}"
+
 
 class HTCFloat(float, PrimitiveExpression):
-    def __eq__(self, other):
-        if isinstance(other, Undefined):
-            return Undefined()
-        return super().__eq__(other)
+    def __mul__(self, other):
+        if isinstance(other, HTCFloat) or isinstance(other, HTCInt):
+            return HTCFloat(super().__mul__(other))
+        elif isinstance(other, Undefined) or isinstance(other, Error):
+            return NotImplemented
+        return Error()
 
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if isinstance(result, bool):
-            return not result
-        return result
+    __rmul__ = __mul__
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>: {self}"
 
 
 class HTCBool(PrimitiveExpression):
@@ -183,11 +242,6 @@ class HTCBool(PrimitiveExpression):
 
     def __bool__(self):
         return self._value
-
-    def __eq__(self, other):
-        if isinstance(other, Undefined):
-            return Undefined()
-        return super().__eq__(other)
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>: {self._value}"
