@@ -39,6 +39,9 @@ class Undefined:
     def __isnt__(self, other):
         return not self.__is__(other)
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>"
+
 
 class Error:
     """
@@ -75,6 +78,9 @@ class Error:
 
     def __isnt__(self, other):
         return not self.__is__(other)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>"
 
 
 class Attribute:
@@ -180,3 +186,6 @@ class HTCBool(object):
         if isinstance(other, Undefined):
             return Undefined()
         return super().__eq__(other)
+
+    def __repr__(self):
+        return f"<{self._value}>"
