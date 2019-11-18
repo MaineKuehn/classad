@@ -4,7 +4,8 @@ from collections import MutableMapping, OrderedDict
 import pyparsing as pp
 from typing import Any, Iterable, List, Iterator
 
-from classad._primitives import Undefined, Error
+from classad._primitives import Error, Undefined
+from ._base_expression import Expression
 from . import _functions
 
 
@@ -20,49 +21,7 @@ def evaluate_is_operator(a, b):
     return a.__is__(b)
 
 
-class Expression:
-    def __init__(self):
-        self._expression = None
-
-    def evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
-    ) -> Any:
-        if isinstance(key, str):
-            key = key.split(".")
-        return self._evaluate(key=key, my=my, target=target)
-
-    def _evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
-    ) -> Any:
-        return NotImplemented
-
-    @classmethod
-    def from_grammar(cls, tokens):
-        result = cls()
-        if isinstance(tokens, pp.ParseResults):
-            # return all primitives as is
-            if len(tokens) == 1:
-                return tokens[0]
-            else:
-                expression = []
-                for token in tokens:
-                    if isinstance(token, pp.ParseResults):
-                        expression.append(token[0])
-                    else:
-                        expression.append(token)
-                result._expression = tuple(expression)
-        else:
-            result._expression = tokens
-        return result
-
-    def __repr__(self):
-        return f"<{self.__class__.__name__}>: {self._expression}"
-
-    def __eq__(self, other):
-        return type(self) == type(other) and self._expression == other._expression
-
-
-class ClassAd(MutableMapping, Expression):
+class ClassAd(Expression, MutableMapping):
     __slots__ = "_data"
 
     def __add__(self, other):
@@ -157,10 +116,7 @@ class FunctionExpression(Expression):
     ) -> Any:
         expression = []
         for element in self._expression:
-            if isinstance(element, Expression):
-                expression.append(element._evaluate(key=key, my=my, target=target))
-            else:
-                expression.append(element)
+            expression.append(element._evaluate(key=key, my=my, target=target))
         return getattr(_functions, self._name)(*expression)
 
     @classmethod
@@ -176,9 +132,9 @@ class TernaryExpression(Expression):
         self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
         if self._expression[0]:
-            return self._expression[1]
+            return self._expression[1]._evaluate(key=key, my=my, target=target)
         else:
-            return self._expression[2]
+            return self._expression[2]._evaluate(key=key, my=my, target=target)
 
 
 class DotExpression(Expression):
@@ -302,22 +258,10 @@ class ArithmeticExpression(Expression):
     def _evaluate(
         self, key: List[str] = None, my: "ClassAd" = None, target: "ClassAd" = None
     ):
-        result = self._evaluate_operand(
-            self._expression[0], key=key, my=my, target=target
-        )
+        result = self._expression[0]._evaluate(key=key, my=my, target=target)
         for position in range(0, len(self._expression) - 1, 2):
-            second = self._evaluate_operand(
-                self._expression[position + 2], key=key, my=my, target=target
+            second = self._expression[position + 2]._evaluate(
+                key=key, my=my, target=target
             )
             result = self._calculate(result, second, self._expression[position + 1])
         return result
-
-    @staticmethod
-    def _evaluate_operand(
-        operand: any, key: List[str], my: "ClassAd", target: "ClassAd"
-    ) -> Any:
-        try:
-            return operand._evaluate(key=key, my=my, target=target)
-        except AttributeError:
-            pass
-        return operand

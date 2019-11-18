@@ -1,9 +1,10 @@
 """
 Literal constants: integer, float, string, boolean, error, or undefined
 """
+from classad._base_expression import PrimitiveExpression
 
 
-class Undefined:
+class Undefined(PrimitiveExpression):
     """
     The keyword ``UNDEFINED`` (case insensitive) represents the ``UNDEFINED`` value.
     """
@@ -43,7 +44,7 @@ class Undefined:
         return f"<{self.__class__.__name__}>"
 
 
-class Error:
+class Error(PrimitiveExpression):
     """
     The keyword ``ERROR`` (case insensitive) represents the ``ERROR`` value.
     """
@@ -89,7 +90,7 @@ class Attribute:
     pass
 
 
-class HTCInt(int):
+class HTCInt(int, PrimitiveExpression):
     def __add__(self, other):
         if isinstance(other, int):
             return HTCInt(super().__add__(other))
@@ -133,11 +134,11 @@ class HTCInt(int):
         return HTCBool(0)
 
 
-class HTCList(tuple):
+class HTCList(tuple, PrimitiveExpression):
     pass
 
 
-class HTCStr(str):
+class HTCStr(str, PrimitiveExpression):
     def __eq__(self, other):
         if isinstance(other, Undefined):
             return Undefined()
@@ -162,7 +163,7 @@ class HTCStr(str):
         return HTCBool(0)
 
 
-class HTCFloat(float):
+class HTCFloat(float, PrimitiveExpression):
     def __eq__(self, other):
         if isinstance(other, Undefined):
             return Undefined()
@@ -175,8 +176,9 @@ class HTCFloat(float):
         return result
 
 
-class HTCBool(object):
+class HTCBool(PrimitiveExpression):
     def __init__(self, x):
+        super().__init__()
         self._value = True if x != 0 else False
 
     def __bool__(self):
@@ -188,4 +190,4 @@ class HTCBool(object):
         return super().__eq__(other)
 
     def __repr__(self):
-        return f"<{self._value}>"
+        return f"<{self.__class__.__name__}>: {self._value}"
