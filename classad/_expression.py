@@ -224,7 +224,7 @@ class ArithmeticExpression(Expression):
         "/": operator.truediv,
         "<": operator.lt,
         "<=": operator.le,
-        "=>": operator.ge,
+        ">=": operator.ge,
         ">": operator.gt,
         "==": operator.eq,
         "!=": operator.ne,
