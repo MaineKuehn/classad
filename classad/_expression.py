@@ -30,11 +30,21 @@ class Expression:
 
     @classmethod
     def from_grammar(cls, tokens):
+        result = cls()
         if isinstance(tokens, pp.ParseResults):
+            # return all primitives as is
             if len(tokens) == 1:
                 return tokens[0]
-        result = cls()
-        result._expression = tokens
+            else:
+                expression = []
+                for token in tokens:
+                    if isinstance(token, pp.ParseResults):
+                        expression.append(token[0])
+                    else:
+                        expression.append(token)
+                result._expression = tuple(expression)
+        else:
+            result._expression = tokens
         return result
 
     def __repr__(self):
@@ -240,19 +250,6 @@ class ArithmeticExpression(Expression):
         "=?=": evaluate_is_operator,
         "is": evaluate_is_operator,
     }
-
-    @classmethod
-    def from_grammar(cls, tokens):
-        result = cls()
-        try:
-            return result._calculate(tokens[0], tokens[-1], tokens[1])
-        except NotImplementedError:
-            # TODO: lazy loading required
-            if len(tokens) > 1:
-                result._expression = tuple(tokens)
-            else:
-                result._expression = tokens[0]
-        return result
 
     def _calculate(self, first, second, operand):
         try:
