@@ -95,12 +95,11 @@ class FunctionExpression(Expression):
 
 
 class TernaryExpression(Expression):
-    @classmethod
-    def from_grammar(cls, tokens):
-        if tokens[0]:
-            return tokens[1]
+    def evaluate(self, key: str = None, my: ClassAd = None, target: ClassAd = None) -> Any:
+        if self._expression[0]:
+            return self._expression[1]
         else:
-            return tokens[2]
+            return self._expression[2]
 
 
 class DotExpression(Expression):
@@ -127,52 +126,6 @@ class SubscriptableExpression(Expression):
 
 
 class AttributeExpression(Expression):
-    def __add__(self, other):
-        raise ArithmeticError
-
-    def __sub__(self, other):
-        raise ArithmeticError
-
-    def __mul__(self, other):
-        raise ArithmeticError
-
-    def __truediv__(self, other):
-        raise ArithmeticError
-
-    def __lt__(self, other):
-        raise TypeError
-
-    def __le__(self, other):
-        raise TypeError
-
-    def __ge__(self, other):
-        raise TypeError
-
-    def __gt__(self, other):
-        raise TypeError
-
-    def __eq__(self, other):
-        if type(self) == type(other):
-            if self._expression == other._expression:
-                return True
-            return False
-        raise TypeError
-
-    def __ne__(self, other):
-        raise TypeError
-
-    def __and__(self, other):
-        raise ArithmeticError
-
-    def __or__(self, other):
-        raise ArithmeticError
-
-    def __isnt__(self, other):
-        raise TypeError
-
-    def __is__(self, other):
-        raise TypeError
-
     def evaluate(
         self, key: str = None, my: ClassAd = None, target: ClassAd = None
     ) -> Any:
@@ -273,10 +226,16 @@ class ArithmeticExpression(Expression):
     def evaluate(
         self, key: str = None, my: ClassAd = None, target: ClassAd = None
     ) -> Any:
-        result = self._expression[0].evaluate(key=key, my=my, target=target)
+        result = self._evaluate_operand(self._expression[0], key=key, my=my, target=target)
         for position in range(0, len(self._expression) - 1, 2):
-            second = self._expression[position + 2].evaluate(
-                key=key, my=my, target=target
-            )
+            second = self._evaluate_operand(self._expression[position + 2], key=key, my=my, target=target)
             result = self._calculate(result, second, self._expression[position + 1])
         return result
+
+    @staticmethod
+    def _evaluate_operand(operand: any, key: str, my: ClassAd, target: ClassAd) -> Any:
+        try:
+            return operand.evaluate(key=key, my=my, target=target)
+        except AttributeError:
+            pass
+        return operand
