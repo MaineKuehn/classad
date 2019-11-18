@@ -1,6 +1,5 @@
 from classad import _grammar, quantize, parse
-from classad._classad import ClassAd
-from classad._expression import ArithmeticExpression
+from classad._expression import ArithmeticExpression, ClassAd
 from classad._primitives import Error, Undefined, HTCInt, HTCFloat, HTCList, HTCStr
 
 
