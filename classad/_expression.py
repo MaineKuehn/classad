@@ -95,7 +95,9 @@ class FunctionExpression(Expression):
 
 
 class TernaryExpression(Expression):
-    def evaluate(self, key: str = None, my: ClassAd = None, target: ClassAd = None) -> Any:
+    def evaluate(
+        self, key: str = None, my: ClassAd = None, target: ClassAd = None
+    ) -> Any:
         if self._expression[0]:
             return self._expression[1]
         else:
@@ -226,9 +228,13 @@ class ArithmeticExpression(Expression):
     def evaluate(
         self, key: str = None, my: ClassAd = None, target: ClassAd = None
     ) -> Any:
-        result = self._evaluate_operand(self._expression[0], key=key, my=my, target=target)
+        result = self._evaluate_operand(
+            self._expression[0], key=key, my=my, target=target
+        )
         for position in range(0, len(self._expression) - 1, 2):
-            second = self._evaluate_operand(self._expression[position + 2], key=key, my=my, target=target)
+            second = self._evaluate_operand(
+                self._expression[position + 2], key=key, my=my, target=target
+            )
             result = self._calculate(result, second, self._expression[position + 1])
         return result
 

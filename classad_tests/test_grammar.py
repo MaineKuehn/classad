@@ -53,10 +53,18 @@ class TestGrammar(object):
         assert parse("quantize(3, 8)").evaluate() == quantize(HTCInt(3), HTCInt(8))
         assert parse("quantize(3, 2)").evaluate() == quantize(HTCInt(3), HTCInt(2))
         assert parse("quantize(0, 4)").evaluate() == quantize(HTCInt(0), HTCInt(4))
-        assert parse("quantize(1.5, 6.8)").evaluate() == quantize(HTCFloat(1.5), HTCFloat(6.8))
-        assert parse("quantize(6.8, 1.2)").evaluate() == quantize(HTCFloat(6.8), HTCFloat(1.2))
-        assert parse("quantize(10, 5.1)").evaluate() == quantize(HTCInt(10), HTCFloat(5.1))
-        assert parse("quantize(0, {4})").evaluate() == quantize(HTCInt(0), HTCList([HTCInt(4)]))
+        assert parse("quantize(1.5, 6.8)").evaluate() == quantize(
+            HTCFloat(1.5), HTCFloat(6.8)
+        )
+        assert parse("quantize(6.8, 1.2)").evaluate() == quantize(
+            HTCFloat(6.8), HTCFloat(1.2)
+        )
+        assert parse("quantize(10, 5.1)").evaluate() == quantize(
+            HTCInt(10), HTCFloat(5.1)
+        )
+        assert parse("quantize(0, {4})").evaluate() == quantize(
+            HTCInt(0), HTCList([HTCInt(4)])
+        )
         assert parse('quantize(2, {1, 2, "A"})').evaluate() == quantize(
             HTCInt(2), HTCList([HTCInt(1), HTCInt(2), HTCStr("A")])
         )
