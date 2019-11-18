@@ -1,14 +1,15 @@
 import operator
+from collections import MutableMapping, OrderedDict
+
 import pyparsing as pp
-from typing import Any
+from typing import Any, Iterable, List, Iterator
 
 from classad._primitives import Undefined, Error
 from . import _functions
-from ._classad import ClassAd
 
 
-def scope_up(key: str):
-    return ".".join(key.split(".")[:-1])
+def scope_up(key: List[str]):
+    return key[:-1]
 
 
 def evaluate_isnt_operator(a, b):
@@ -24,7 +25,14 @@ class Expression:
         self._expression = None
 
     def evaluate(
-        self, key: str = None, my: ClassAd = None, target: ClassAd = None
+        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+    ) -> Any:
+        if isinstance(key, str):
+            key = key.split(".")
+        return self._evaluate(key=key, my=my, target=target)
+
+    def _evaluate(
+        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
         return NotImplemented
 
@@ -54,12 +62,81 @@ class Expression:
         return type(self) == type(other) and self._expression == other._expression
 
 
-class NamedExpression(Expression):
+class ClassAd(MutableMapping, Expression):
+    __slots__ = "_data"
+
+    def __add__(self, other):
+        return Error()
+
+    __sub__ = __rsub__ = __radd__ = __add__
+
+    def __init__(self):
+        super().__init__()
+        self._data = OrderedDict()
+
+    def __setitem__(self, key: str, value: Expression) -> None:
+        """
+        Keynames that are reserved and, therefore, cannot be used: error, false, is,
+            isnt, parent, true, undefined
+        """
+        try:
+            key = key.casefold()
+        except AttributeError:
+            key = key._expression.casefold()
+        if key in ["error", "false", "is", "isnt", "parent", "true", "undefined"]:
+            raise ValueError(f"{key} is a reserved name")
+        self._data[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        self._data.pop(key, None)
+
+    def __getitem__(self, key: Iterable) -> Expression:
+        if isinstance(key, str):
+            key = [key]
+        expression = self._data
+        for token in key:
+            token = token.casefold()
+            try:
+                expression = expression[token]
+            except KeyError:
+                return Undefined()
+        return expression
+
+    def __len__(self) -> int:
+        return len(self._data)
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._data)
+
+    def _evaluate(
+        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+    ) -> Any:
+        """
+        Perform a matchmaking between an expression defined by the named attribute
+        key in the context of the target ClassAd.
+        """
+        expression = self[key]
+        new_key = key[:-1]
+        return expression._evaluate(key=new_key, my=self, target=target)
+
     @classmethod
     def from_grammar(cls, tokens):
         result = cls()
-        result._expression = tokens
+        for token in tokens:
+            result[token[0]] = token[1]
         return result
+
+    def __eq__(self, other):
+        if type(self) == type(other):
+            return self._data == other._data
+        return False
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>: {self._data}"
+
+
+class NamedExpression(Expression):
+    pass
 
 
 class FunctionExpression(Expression):
@@ -75,13 +152,13 @@ class FunctionExpression(Expression):
             and self._name == other._name
         )
 
-    def evaluate(
-        self, key: str = None, my: ClassAd = None, target: ClassAd = None
+    def _evaluate(
+        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
         expression = []
         for element in self._expression:
             if isinstance(element, Expression):
-                expression.append(element.evaluate(my, target))
+                expression.append(element._evaluate(key=key, my=my, target=target))
             else:
                 expression.append(element)
         return getattr(_functions, self._name)(*expression)
@@ -95,8 +172,8 @@ class FunctionExpression(Expression):
 
 
 class TernaryExpression(Expression):
-    def evaluate(
-        self, key: str = None, my: ClassAd = None, target: ClassAd = None
+    def _evaluate(
+        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
         if self._expression[0]:
             return self._expression[1]
@@ -105,8 +182,8 @@ class TernaryExpression(Expression):
 
 
 class DotExpression(Expression):
-    def evaluate(
-        self, key: str = None, my: ClassAd = None, target: ClassAd = None
+    def _evaluate(
+        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
         checked = set()
         to_check = self._expression[1]
@@ -120,16 +197,19 @@ class DotExpression(Expression):
 
 
 class SubscriptableExpression(Expression):
-    @classmethod
-    def from_grammar(cls, tokens):
-        if len(tokens) == 2:
-            return tokens[0][tokens[1]]
+    def _evaluate(
+        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+    ) -> Any:
+        if len(self._expression) == 2:
+            return self._expression[0][self._expression[1]]._evaluate(
+                key=key, my=my, target=target
+            )
         return NotImplemented
 
 
 class AttributeExpression(Expression):
-    def evaluate(
-        self, key: str = None, my: ClassAd = None, target: ClassAd = None
+    def _evaluate(
+        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
         def find_scope(current_key):
             if len(current_key) > 0:
@@ -139,7 +219,7 @@ class AttributeExpression(Expression):
         value = Undefined()
         if self._expression[0] == ".":
             key = scope_up(self._expression[1])
-            expression = self._expression[1].split(".")[-1]
+            expression = self._expression[1][-1]
         elif self._expression[0] == "super":
             key = scope_up(key)
             expression = self._expression[1]
@@ -157,7 +237,7 @@ class AttributeExpression(Expression):
                 key = scope_up(key)
                 context = find_scope(key)
         if isinstance(value, AttributeExpression):
-            return value.evaluate(key=key, my=my, target=target)
+            return value._evaluate(key=key, my=my, target=target)
         return value
 
     @classmethod
@@ -166,21 +246,16 @@ class AttributeExpression(Expression):
         if isinstance(tokens, pp.ParseResults):
             if isinstance(tokens[0], ClassAd):
                 result = DotExpression()
-                result._expression = tokens
+                result._expression = tuple(tokens)
             elif isinstance(tokens[0], str) and tokens[0] == ".":
-                result._expression = ["."]
-                tokens = tokens[1:]
-                result._expression.append(
-                    ".".join([token._expression for token in tokens])
-                )
+                result._expression = tuple([tokens[0], tokens[1]._expression])
             elif isinstance(tokens[0], NamedExpression):
-                result._expression = [tokens[0]._expression]
+                expression = [tokens[0]._expression]
                 tokens = tokens[1:]
-                result._expression.append(
-                    ".".join([token._expression for token in tokens])
-                )
+                expression.extend([token._expression for token in tokens])
+                result._expression = tuple(expression)
             else:
-                result._expression = ".".join([token._expression for token in tokens])
+                result._expression = tuple(token._expression for token in tokens)
         else:
             result._expression = tokens
         return result
@@ -225,9 +300,9 @@ class ArithmeticExpression(Expression):
             )
         return False
 
-    def evaluate(
-        self, key: str = None, my: ClassAd = None, target: ClassAd = None
-    ) -> Any:
+    def _evaluate(
+        self, key: List[str] = None, my: "ClassAd" = None, target: "ClassAd" = None
+    ):
         result = self._evaluate_operand(
             self._expression[0], key=key, my=my, target=target
         )
@@ -239,9 +314,11 @@ class ArithmeticExpression(Expression):
         return result
 
     @staticmethod
-    def _evaluate_operand(operand: any, key: str, my: ClassAd, target: ClassAd) -> Any:
+    def _evaluate_operand(
+        operand: any, key: List[str], my: "ClassAd", target: "ClassAd"
+    ) -> Any:
         try:
-            return operand.evaluate(key=key, my=my, target=target)
+            return operand._evaluate(key=key, my=my, target=target)
         except AttributeError:
             pass
         return operand
