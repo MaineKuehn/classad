@@ -161,7 +161,7 @@ class TernaryExpression(Expression):
     def _evaluate(
         self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
-        result = self._expression[0].evaluate(key=key, my=my, target=target)
+        result = self._expression[0]._evaluate(key=key, my=my, target=target)
         if isinstance(result, Undefined):
             return Undefined()
         if isinstance(result, HTCBool):
@@ -204,11 +204,9 @@ class SubscriptableExpression(Expression):
     def _evaluate(
         self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
-        if len(self._expression) == 2:
-            return self._expression[0][self._expression[1]]._evaluate(
-                key=key, my=my, target=target
-            )
-        return NotImplemented
+        operand = self._expression[0]._evaluate(key=key, my=my, target=target)
+        index = self._expression[1]._evaluate(key=key, my=my, target=target)
+        return operand[index]._evaluate(key=key, my=my, target=target)
 
 
 class AttributeExpression(Expression):
@@ -273,15 +271,8 @@ class UnaryExpression(Expression):
     def _evaluate(
         self, key: List[str] = None, my: "ClassAd" = None, target: "ClassAd" = None
     ):
-        checked = set()
-        to_check = self._expression[1]
-        while (
-            isinstance(to_check, AttributeExpression)
-            and to_check._expression not in checked
-        ):
-            checked.add(to_check._expression)
-            to_check = to_check._evaluate(key=key, my=my, target=target)
-        return self.operator_map[self._expression[0]](to_check)
+        operand = self._expression[1]._evaluate(key=key, my=my, target=target)
+        return self.operator_map[self._expression[0]](operand)
 
 
 class ArithmeticExpression(Expression):
