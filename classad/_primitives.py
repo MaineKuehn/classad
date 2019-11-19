@@ -12,6 +12,9 @@ class Undefined(PrimitiveExpression):
     def __eq__(self, other):
         return type(self) == type(other)
 
+    def __bool__(self):
+        raise TypeError
+
     def __htc_eq__(self, other):
         if isinstance(other, Error):
             return NotImplemented
@@ -67,6 +70,9 @@ class Error(PrimitiveExpression):
 
     def __eq__(self, other):
         return type(self) == type(other)
+
+    def __bool__(self):
+        raise TypeError
 
     def __htc_eq__(self, other):
         return Error()
