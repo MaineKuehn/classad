@@ -265,6 +265,19 @@ class AttributeExpression(Expression):
 class UnaryExpression(Expression):
     operator_map = {"-": None, "!": evaluate_not_operator}
 
+    def _evaluate(
+        self, key: List[str] = None, my: "ClassAd" = None, target: "ClassAd" = None
+    ):
+        checked = set()
+        to_check = self._expression[1]
+        while (
+            isinstance(to_check, AttributeExpression)
+            and to_check._expression not in checked
+        ):
+            checked.add(to_check._expression)
+            to_check = to_check._evaluate(key=key, my=my, target=target)
+        return self.operator_map[self._expression[0]](to_check)
+
 
 class ArithmeticExpression(Expression):
     operator_map = {

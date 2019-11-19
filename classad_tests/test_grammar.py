@@ -204,3 +204,11 @@ class TestGrammar(object):
         assert parse("Error || True").evaluate() == Error()
         assert parse("Error || Undefined").evaluate() == Error()
         assert parse("Error || Error").evaluate() == Error()
+
+    def test_logical_not(self):
+        assert not parse("!True").evaluate()
+        assert parse("!False").evaluate()
+        assert parse("!Undefined").evaluate() == Undefined()
+        assert parse("!Error").evaluate() == Error()
+        assert parse("!'test'").evaluate() == Error()
+        assert not parse("[a=True;b=!a]").evaluate("b")
