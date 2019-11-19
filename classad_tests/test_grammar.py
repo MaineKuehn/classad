@@ -130,8 +130,6 @@ class TestGrammar(object):
         assert parse('10 * "foo"').evaluate() == Error()
         assert parse("17 / 0").evaluate() == Error()
 
-        assert parse("true?10:undefined").evaluate() == 10
-        assert parse('false?error:"foo"').evaluate() == "foo"
         assert not parse("undefined is 10").evaluate()
         assert parse("error is error").evaluate()
 
@@ -212,3 +210,10 @@ class TestGrammar(object):
         assert parse("!Error").evaluate() == Error()
         assert parse("!'test'").evaluate() == Error()
         assert not parse("[a=True;b=!a]").evaluate("b")
+
+    def test_ternary(self):
+        assert parse("true?10:undefined").evaluate() == 10
+        assert parse('false?error:"foo"').evaluate() == "foo"
+        assert parse("Undefined?True:False").evaluate() == Undefined()
+        assert parse("10==True?True:False").evaluate() == Error()
+        assert parse("5?True:False").evaluate() == Error()
