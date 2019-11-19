@@ -4,7 +4,7 @@ from collections import MutableMapping, OrderedDict
 import pyparsing as pp
 from typing import Any, Iterable, List, Iterator
 
-from classad._primitives import Error, Undefined
+from classad._primitives import Error, Undefined, HTCBool
 from ._base_expression import Expression
 from . import _functions
 
@@ -161,10 +161,15 @@ class TernaryExpression(Expression):
     def _evaluate(
         self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
-        if self._expression[0]:
-            return self._expression[1]._evaluate(key=key, my=my, target=target)
-        else:
-            return self._expression[2]._evaluate(key=key, my=my, target=target)
+        result = self._expression[0].evaluate(key=key, my=my, target=target)
+        if isinstance(result, Undefined):
+            return Undefined()
+        if isinstance(result, HTCBool):
+            if result:
+                return self._expression[1]._evaluate(key=key, my=my, target=target)
+            elif not result:
+                return self._expression[2]._evaluate(key=key, my=my, target=target)
+        return Error()
 
 
 class DotExpression(Expression):
@@ -303,7 +308,7 @@ class ArithmeticExpression(Expression):
         try:
             return self.operator_map[operand](first, second)
         except (ArithmeticError, AttributeError, TypeError):
-            raise NotImplementedError
+            return Error()
 
     def __eq__(self, other):
         if type(self) == type(other):
