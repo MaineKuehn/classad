@@ -217,3 +217,6 @@ class TestGrammar(object):
         assert parse("Undefined?True:False").evaluate() == Undefined()
         assert parse("10==True?True:False").evaluate() == Error()
         assert parse("5?True:False").evaluate() == Error()
+
+    def test_subscriptable_expression(self):
+        assert parse("[a=1;b={1,d,3};c=b[a];d=4]").evaluate("c") == 4
