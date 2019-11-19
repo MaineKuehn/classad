@@ -14,11 +14,31 @@ def scope_up(key: List[str]):
 
 
 def evaluate_isnt_operator(a, b):
-    return a.__isnt__(b)
+    result = a.__htc_isnt__(b)
+    if result == NotImplemented:
+        result = b.__htc_isnt__(a)
+    return result
 
 
 def evaluate_is_operator(a, b):
-    return a.__is__(b)
+    result = a.__htc_is__(b)
+    if result == NotImplemented:
+        result = b.__htc_is__(a)
+    return result
+
+
+def evaluate_eq_operator(a, b):
+    result = a.__htc_eq__(b)
+    if result == NotImplemented:
+        result = b.__htc_eq__(a)
+    return result
+
+
+def evaluate_ne_operator(a, b):
+    result = a.__htc_ne__(b)
+    if result == NotImplemented:
+        result = b.__htc_ne__(a)
+    return result
 
 
 class ClassAd(Expression, MutableMapping):
@@ -141,12 +161,25 @@ class DotExpression(Expression):
     def _evaluate(
         self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
+        scope = self._expression[0]
         checked = set()
         to_check = self._expression[1]
         while isinstance(to_check, AttributeExpression):
             if to_check._expression not in checked:
                 checked.add(to_check._expression)
-                to_check = self._expression[0][to_check._expression]
+                result = scope[to_check._expression]
+                if not isinstance(result, Undefined):
+                    to_check = result
+                else:
+                    try:
+                        new_scope = my[key]
+                    except TypeError:
+                        return Undefined()
+                    if new_scope != scope:
+                        checked.remove(to_check._expression)
+                        scope = new_scope
+                    else:
+                        return Undefined()
             else:
                 return Undefined()
         return to_check
@@ -210,7 +243,10 @@ class AttributeExpression(Expression):
                     [tokens[0]._expression, tokens[1]._expression]
                 )
             else:
-                result._expression = tuple(token._expression for token in tokens)
+                if len(tokens) > 1:
+                    result._expression = tuple(token._expression for token in tokens)
+                else:
+                    result._expression = tokens[0]._expression
         else:
             result._expression = tokens
         return result
@@ -226,8 +262,8 @@ class ArithmeticExpression(Expression):
         "<=": operator.le,
         ">=": operator.ge,
         ">": operator.gt,
-        "==": operator.eq,
-        "!=": operator.ne,
+        "==": evaluate_eq_operator,
+        "!=": evaluate_ne_operator,
         "&&": operator.and_,
         "||": operator.or_,
         "=!=": evaluate_isnt_operator,
