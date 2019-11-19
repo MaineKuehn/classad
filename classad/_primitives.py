@@ -45,9 +45,6 @@ class Undefined(PrimitiveExpression):
         __lt__
     ) = __le__ = __ge__ = __gt__ = __ne__ = __rand__ = __ror__ = __htc_ne__ = __htc_eq__
 
-    def __bool__(self):
-        raise TypeError
-
     def __htc_is__(self, other):
         if type(self) == type(other):
             return HTCBool(True)
@@ -97,9 +94,6 @@ class Error(PrimitiveExpression):
     ) = (
         __gt__
     ) = __ne__ = __and__ = __rand__ = __or__ = __ror__ = __htc_ne__ = __htc_eq__
-
-    def __bool__(self):
-        raise TypeError
 
     def __htc_is__(self, other):
         if type(self) == type(other):
