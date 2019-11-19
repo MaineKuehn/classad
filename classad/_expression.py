@@ -41,6 +41,10 @@ def evaluate_ne_operator(a, b):
     return result
 
 
+def evaluate_not_operator(a):
+    return a.__htc_not__()
+
+
 class ClassAd(Expression, MutableMapping):
     __slots__ = "_data"
 
@@ -250,6 +254,10 @@ class AttributeExpression(Expression):
         else:
             result._expression = tokens
         return result
+
+
+class UnaryExpression(Expression):
+    operator_map = {"-": None, "!": evaluate_not_operator}
 
 
 class ArithmeticExpression(Expression):

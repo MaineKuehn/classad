@@ -53,7 +53,7 @@ class Undefined(PrimitiveExpression):
     def __htc_isnt__(self, other):
         return not self.__htc_is__(other)
 
-    def __htc_not__(self, other):
+    def __htc_not__(self):
         return Undefined()
 
     def __repr__(self):
@@ -103,7 +103,7 @@ class Error(PrimitiveExpression):
     def __htc_isnt__(self, other):
         return not self.__is__(other)
 
-    def __htc_not__(self, other):
+    def __htc_not__(self):
         return Error()
 
     def __repr__(self):
@@ -212,7 +212,7 @@ class HTCInt(int, PrimitiveExpression):
             return HTCBool(True)
         return HTCBool(False)
 
-    def __htc_not__(self, other):
+    def __htc_not__(self):
         return Error()
 
     def __repr__(self):
@@ -249,7 +249,7 @@ class HTCStr(str, PrimitiveExpression):
             return HTCBool(1)
         return HTCBool(0)
 
-    def __htc_not__(self, other):
+    def __htc_not__(self):
         return Error()
 
     def __repr__(self):
@@ -266,7 +266,7 @@ class HTCFloat(float, PrimitiveExpression):
 
     __rmul__ = __mul__
 
-    def __htc_not__(self, other):
+    def __htc_not__(self):
         return Error()
 
     def __repr__(self):
@@ -300,7 +300,7 @@ class HTCBool(PrimitiveExpression):
                 return other
         return Error()
 
-    def __htc_not__(self, other):
+    def __htc_not__(self):
         return HTCBool(not self._value)
 
     def __repr__(self):

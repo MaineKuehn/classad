@@ -9,6 +9,7 @@ from classad._expression import (
     SubscriptableExpression,
     TernaryExpression,
     NamedExpression,
+    UnaryExpression,
 )
 from classad._primitives import (
     Error,
@@ -191,12 +192,16 @@ def binary_parse_action(s, l, t):
     return ArithmeticExpression.from_grammar(t[0])
 
 
+def unary_parse_action(s, l, t):
+    return UnaryExpression.from_grammar(t[0])
+
+
 # unary operators: + - ~ !
 # binary operators: \\ && | ^ & == != is isnt < > <= >= << >> >>> + - * / %
 arithmetic_expression << pp.infixNotation(
     suffix_expression,
     [
-        ("-", 1, pp.opAssoc.RIGHT),
+        (pp.oneOf("- !"), 1, pp.opAssoc.RIGHT, unary_parse_action),
         (pp.oneOf("* /"), 2, pp.opAssoc.LEFT, binary_parse_action),
         (pp.oneOf("+ -"), 2, pp.opAssoc.LEFT, binary_parse_action),
         (pp.oneOf("< <= >= >"), 2, pp.opAssoc.LEFT, binary_parse_action),
