@@ -119,7 +119,13 @@ class ClassAd(Expression, MutableMapping):
 
 
 class NamedExpression(Expression):
-    pass
+    @classmethod
+    def from_grammar(cls, tokens):
+        if "super" == tokens:
+            raise NotImplementedError("Super is not supported")
+        result = cls()
+        result._expression = tokens
+        return result
 
 
 class FunctionExpression(Expression):
