@@ -1,6 +1,14 @@
 from classad import _grammar, quantize, parse
 from classad._expression import ArithmeticExpression, ClassAd
-from classad._primitives import Error, Undefined, HTCInt, HTCFloat, HTCList, HTCStr
+from classad._primitives import (
+    Error,
+    Undefined,
+    HTCInt,
+    HTCFloat,
+    HTCList,
+    HTCStr,
+    HTCBool,
+)
 
 
 class TestGrammar(object):
@@ -149,9 +157,46 @@ class TestGrammar(object):
         assert parse("[a=1;b=[a=2;c=[b=a]];d=.b.c.b]").evaluate(key="d") == 2
         assert parse("[a=1;b=[a=2;c=[b=.a]];d=.a.b.a.b]").evaluate(key="d") == Error()
 
+    def test_super(self):
         assert parse("[a=1;b=[c=2];d=[super=.b]].d.c").evaluate() == 2
         assert parse("[a=1;b=[a=7;c=super.a]]").evaluate(key="b.c") == 1
 
     def test_circularities(self):
         assert parse("[b=a;a=b].a").evaluate() == Undefined()
         assert parse("[a=[super=.b]; b=[super=.a]].x").evaluate() == Undefined()
+
+    def test_and(self):
+        assert not parse("False && False").evaluate()
+        assert not parse("False && True").evaluate()
+        assert not parse("False && Undefined").evaluate()
+        assert not parse("False && Error").evaluate()
+        assert not parse("True && False").evaluate()
+        assert parse("True && True").evaluate()
+        assert parse("True && Undefined").evaluate() == Undefined()
+        assert parse("True && Error").evaluate() == Error()
+        assert not parse("Undefined && False").evaluate()
+        assert parse("Undefined && True").evaluate() == Undefined()
+        assert parse("Undefined && Undefined").evaluate() == Undefined()
+        assert parse("Undefined && Error").evaluate() == Error()
+        assert parse("Error && False").evaluate() == Error()
+        assert parse("Error && True").evaluate() == Error()
+        assert parse("Error && Undefined").evaluate() == Error()
+        assert parse("Error && Error").evaluate() == Error()
+
+    def test_or(self):
+        assert parse("False || False").evaluate() == HTCBool(False)
+        assert parse("False || True").evaluate() == HTCBool(True)
+        assert parse("False || Undefined").evaluate() == Undefined()
+        assert parse("False || Error").evaluate() == Error()
+        assert parse("True || False").evaluate() == HTCBool(True)
+        assert parse("True || True").evaluate()
+        assert parse("True || Undefined").evaluate()
+        assert parse("True || Error").evaluate()
+        assert parse("Undefined || False").evaluate() == Undefined()
+        assert parse("Undefined || True").evaluate()
+        assert parse("Undefined || Undefined").evaluate() == Undefined()
+        assert parse("Undefined || Error").evaluate() == Error()
+        assert parse("Error || False").evaluate() == Error()
+        assert parse("Error || True").evaluate() == Error()
+        assert parse("Error || Undefined").evaluate() == Error()
+        assert parse("Error || Error").evaluate() == Error()
