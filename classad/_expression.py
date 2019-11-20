@@ -137,6 +137,11 @@ class TernaryExpression(Expression):
         self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
         result = self._expression[0]._evaluate(key=key, my=my, target=target)
+        if self._expression[1] is None:
+            if isinstance(result, Undefined):
+                return self._expression[2]._evaluate(key=key, my=my, target=target)
+            else:
+                return result
         if isinstance(result, Undefined):
             return Undefined()
         if isinstance(result, HTCBool):

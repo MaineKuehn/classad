@@ -214,7 +214,7 @@ expression << pp.Group(
     (
         pp.Group(arithmetic_expression)("if")
         + pp.Suppress("?")
-        + pp.Group(expression)("then")
+        + pp.Optional(expression, default=None)("then")
         + pp.Suppress(":")
         + pp.Group(expression)("else")
     ).setParseAction(lambda s, l, t: TernaryExpression.from_grammar(t))
