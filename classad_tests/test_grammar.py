@@ -184,6 +184,7 @@ class TestGrammar(object):
         assert parse("Error && True").evaluate() == Error()
         assert parse("Error && Undefined").evaluate() == Error()
         assert parse("Error && Error").evaluate() == Error()
+        assert parse('True && "foo"').evaluate() == Error()
 
     def test_or(self):
         assert parse("False || False").evaluate() == HTCBool(False)
@@ -217,6 +218,8 @@ class TestGrammar(object):
         assert parse("Undefined?True:False").evaluate() == Undefined()
         assert parse("10==True?True:False").evaluate() == Error()
         assert parse("5?True:False").evaluate() == Error()
+        assert parse("True?:1").evaluate()
+        assert parse("Undefined?:1").evaluate() == 1
 
     def test_subscriptable_expression(self):
         assert parse("[a=1;b={1,d,3};c=b[a];d=4]").evaluate("c") == 4
