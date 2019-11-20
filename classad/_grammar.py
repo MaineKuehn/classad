@@ -61,7 +61,6 @@ reserved_word = (
     | undefined_literal
     | super_literal
 ).setName("reserved_word")
-punctuation = pp.oneOf("= ( ) { } [ ] , ;").setName("punctuation")
 integer_literal = (
     "0"
     | pp.Word(nonzero_digit, decimal_digit)
