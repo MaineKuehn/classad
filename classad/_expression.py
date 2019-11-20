@@ -197,9 +197,6 @@ class AttributeExpression(Expression):
         if self._expression[0] == ".":
             key = scope_up(self._expression[1])
             expression = self._expression[1][-1]
-        elif self._expression[0] == "super":
-            key = scope_up(key)
-            expression = self._expression[1]
         else:
             expression = self._expression
         try:
