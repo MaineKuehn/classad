@@ -4,6 +4,13 @@ from collections import MutableMapping, OrderedDict
 import pyparsing as pp
 from typing import Any, Iterable, List, Iterator
 
+from classad._operator import (
+    eq_operator,
+    ne_operator,
+    isnt_operator,
+    is_operator,
+    not_operator,
+)
 from classad._primitives import Error, Undefined, HTCBool
 from ._base_expression import Expression
 from . import _functions
@@ -11,38 +18,6 @@ from . import _functions
 
 def scope_up(key: List[str]):
     return key[:-1]
-
-
-def evaluate_isnt_operator(a, b):
-    result = a.__htc_isnt__(b)
-    if result == NotImplemented:
-        result = b.__htc_isnt__(a)
-    return result
-
-
-def evaluate_is_operator(a, b):
-    result = a.__htc_is__(b)
-    if result == NotImplemented:
-        result = b.__htc_is__(a)
-    return result
-
-
-def evaluate_eq_operator(a, b):
-    result = a.__htc_eq__(b)
-    if result == NotImplemented:
-        result = b.__htc_eq__(a)
-    return result
-
-
-def evaluate_ne_operator(a, b):
-    result = a.__htc_ne__(b)
-    if result == NotImplemented:
-        result = b.__htc_ne__(a)
-    return result
-
-
-def evaluate_not_operator(a):
-    return a.__htc_not__()
 
 
 class ClassAd(Expression, MutableMapping):
@@ -266,7 +241,7 @@ class AttributeExpression(Expression):
 
 
 class UnaryExpression(Expression):
-    operator_map = {"-": None, "!": evaluate_not_operator}
+    operator_map = {"-": None, "!": not_operator}
 
     def _evaluate(
         self, key: List[str] = None, my: "ClassAd" = None, target: "ClassAd" = None
@@ -285,14 +260,14 @@ class ArithmeticExpression(Expression):
         "<=": operator.le,
         ">=": operator.ge,
         ">": operator.gt,
-        "==": evaluate_eq_operator,
-        "!=": evaluate_ne_operator,
+        "==": eq_operator,
+        "!=": ne_operator,
         "&&": operator.and_,
         "||": operator.or_,
-        "=!=": evaluate_isnt_operator,
-        "isnt": evaluate_isnt_operator,
-        "=?=": evaluate_is_operator,
-        "is": evaluate_is_operator,
+        "=!=": isnt_operator,
+        "isnt": isnt_operator,
+        "=?=": is_operator,
+        "is": is_operator,
     }
 
     def _calculate(self, first, second, operand):
