@@ -72,5 +72,48 @@ class PrimitiveExpression(Expression):
     def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return NotImplemented
 
-    def __htc_isnt__(self, b: "PrimitiveExpression") -> "HTCBool":
+    def __eq__(self, other: "PrimitiveExpression") -> "HTCBool":
+        """
+        Implementation of `is` and `=?=` operator as defined by classad
+        specification. Resulting values are only in the domain as defined by
+        :py:class:`~.HTCBool`.
+
+        .. Note:
+            The `is` operator is similar to the equality operator `==`. It checks if
+            the left hand side operand is identical in both type and value to the
+            right hand side operator, returning the :py:class:`~.HTCBool` value
+            `True` when they are identical.
+
+        .. Warning:
+            The `is` operator for strings is case-sensitive while it isn't for
+            the equality operator.
+
+        .. code:
+            parse('("ABC" =?= "abc")').evaluate()  # result: HTCBool(False)
+            parse("(10 =?= Undefined)").evaluate()  # result: HTCBool(False)
+            parse("(10 == Undefined)").evaluate()  # result: Undefined
+        """
+        return NotImplemented
+
+    def __ne__(self, other: "PrimitiveExpression") -> "HTCBool":
+        """
+        Implementation of `isnt` and `=!=` operator as defined by classad
+        specification. Resulting values are only in the domain as defined by
+        :py:class:`~.HTCBool`.
+
+        .. Note:
+            The `isnt` operator is similar to the inequality operator `!=`. It checks
+            if the left hand side operand is not identical in both type and value to
+            the right hand side operator, returning the :py:class:`~.HTCBool` value
+            `False` when they are identical.
+
+        .. Warning:
+            The `isnt` operator for strings is case-sensitive while it isn't for
+            the inequality operator.
+
+        .. code:
+            parse('("ABC" =!= "abc")').evaluate()  # result: HTCBool(True)
+            parse("(10 =!= Undefined)").evaluate()  # result: HTCBool(True)
+            parse("(10 != Undefined)").evaluate()  # result: Undefined
+        """
         return NotImplemented
