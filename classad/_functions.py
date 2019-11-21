@@ -34,10 +34,11 @@ are excluded as those are not listed in the HTCondor Manual, those include
 """
 import math
 import random as py_random
-from typing import TypeVar, List, Union, overload, Optional
+from typing import TypeVar, List, Union, overload, Optional, Any
 
+from classad._grammar import parse
+from classad._base_expression import Expression
 from classad._primitives import (
-    Attribute,
     Undefined,
     Error,
     HTCFloat,
@@ -52,18 +53,18 @@ number = Union[HTCFloat, HTCInt]
 literal_type = Union[number, HTCStr, HTCBool, Undefined, Error]
 
 
-def eval(expression: literal_type) -> literal_type:
+def eval(expression: Any) -> literal_type:
     """
     Evaluates :py:attr:`expression` as a string and then returns the
     result of evaluating the contents of the string as a :py:class:`~.ClassAd`
     expression.
     """
-    if isinstance(expression, (HTCFloat, HTCInt, Undefined, Error, HTCStr, HTCList)):
+    if isinstance(expression, Expression):
         return expression
-    raise NotImplementedError
+    return parse(expression)
 
 
-def unparse(attribute: Attribute) -> HTCStr:
+def unparse(attribute: Expression) -> str:
     """
     This function looks up the value of the provided :py:attr:`attribute` and
     returns the unparsed version as a :py:class:`str`. The attribute's value is
@@ -74,13 +75,8 @@ def unparse(attribute: Attribute) -> HTCStr:
 
     This function returns :py:class:`~.Error` if other than exactly ``1``
     argument is given or the argument is not an attribute reference.
-
-    .. todo::
-
-          We need to make sure how we can actually do a lookup without an
-          explicit reference to the :py:class:`~.ClassAd` itself.
     """
-    raise NotImplementedError
+    return attribute.__repr__()
 
 
 def ifThenElse(
@@ -479,7 +475,13 @@ def strcat(expression: literal_type, *args: literal_type) -> Union[HTCStr, Error
     Returns :py:class:`~.Error` if any argument evaluates to :py:class:`~.Undefined`
     or :py:class:`~.Error`.
     """
-    raise NotImplementedError
+    parts = []
+    for arg in [expression, *args]:
+        element = string(arg)
+        if isinstance(element, Undefined) or isinstance(element, Error):
+            return element
+        parts.append(element)
+    return HTCStr("".join(parts))
 
 
 @overload
