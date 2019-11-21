@@ -67,6 +67,8 @@ class ClassAd(Expression, MutableMapping):
         Perform a matchmaking between an expression defined by the named attribute
         key in the context of the target ClassAd.
         """
+        if key is None:
+            return self
         expression = self[key]
         new_key = key[:-1]
         return expression._evaluate(key=new_key, my=self, target=target)
