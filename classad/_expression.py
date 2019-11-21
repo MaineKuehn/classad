@@ -1,5 +1,5 @@
 import operator
-from collections import MutableMapping, OrderedDict
+from collections import MutableMapping
 
 import pyparsing as pp
 from typing import Any, Iterable, List, Iterator, Optional, Union

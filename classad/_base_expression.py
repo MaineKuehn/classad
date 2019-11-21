@@ -11,7 +11,10 @@ class Expression:
     _expression: "Expression"
 
     def evaluate(
-        self, key: Optional[Iterable] = None, my: "Optional[ClassAd]" = None, target: "Optional[ClassAd]" = None
+        self,
+        key: "Optional[Iterable[Union[str, Expression]]]" = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ) -> Any:
         if isinstance(key, str):
             key = key.split(".")
@@ -19,7 +22,7 @@ class Expression:
 
     def _evaluate(
         self,
-        key: "Optional[Iterable[str, Expression]]" = None,
+        key: "Optional[Iterable[Union[str, Expression]]]" = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
