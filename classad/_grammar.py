@@ -89,7 +89,9 @@ non_quote = (
     | pp.Word(pp.printables, " ", excludeChars="\"'\\\n\r0")
 )
 unquoted_name = pp.Word(pp.alphas + "_", pp.alphanums + "_")
-quoted_name = (SQUOTE + pp.OneOrMore(non_quote | '"') + SQUOTE).setName("quoted_name")
+quoted_name = pp.Combine((SQUOTE + pp.OneOrMore(non_quote | '"') + SQUOTE)).setName(
+    "quoted_name"
+)
 string_literal = (
     pp.Combine(DQUOTE + pp.ZeroOrMore(non_quote | "'") + DQUOTE)("string*")
     .setParseAction(lambda s, l, t: HTCStr(t[0]))
