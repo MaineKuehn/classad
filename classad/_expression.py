@@ -4,13 +4,7 @@ from collections import MutableMapping, OrderedDict
 import pyparsing as pp
 from typing import Any, Iterable, List, Iterator
 
-from classad._operator import (
-    eq_operator,
-    ne_operator,
-    isnt_operator,
-    is_operator,
-    not_operator,
-)
+from classad._operator import eq_operator, ne_operator, not_operator
 from classad._primitives import Error, Undefined, HTCBool
 from ._base_expression import Expression
 from . import _functions
@@ -266,10 +260,10 @@ class ArithmeticExpression(Expression):
         "!=": ne_operator,
         "&&": operator.and_,
         "||": operator.or_,
-        "=!=": isnt_operator,
-        "isnt": isnt_operator,
-        "=?=": is_operator,
-        "is": is_operator,
+        "=!=": operator.ne,
+        "isnt": operator.ne,
+        "=?=": operator.eq,
+        "is": operator.eq,
     }
 
     def _calculate(self, first, second, operand):
