@@ -2,7 +2,7 @@ import operator
 from collections import MutableMapping, OrderedDict
 
 import pyparsing as pp
-from typing import Any, Iterable, List, Iterator
+from typing import Any, Iterable, List, Iterator, Optional, Union
 
 from classad._operator import eq_operator, ne_operator, not_operator
 from classad._primitives import Error, Undefined, HTCBool
@@ -61,7 +61,10 @@ class ClassAd(Expression, MutableMapping):
         return iter(self._data)
 
     def _evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self,
+        key: Optional[Iterable[Union[str, Expression]]] = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ) -> Any:
         """
         Perform a matchmaking between an expression defined by the named attribute
@@ -113,7 +116,10 @@ class FunctionExpression(Expression):
         )
 
     def _evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self,
+        key: Optional[Iterable[Union[str, Expression]]] = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ) -> Any:
         expression = []
         for element in self._expression:
@@ -130,7 +136,10 @@ class FunctionExpression(Expression):
 
 class TernaryExpression(Expression):
     def _evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self,
+        key: Optional[Iterable[Union[str, Expression]]] = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ) -> Any:
         result = self._expression[0]._evaluate(key=key, my=my, target=target)
         if self._expression[1] is None:
@@ -150,7 +159,10 @@ class TernaryExpression(Expression):
 
 class DotExpression(Expression):
     def _evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self,
+        key: Optional[Iterable[Union[str, Expression]]] = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ) -> Any:
         scope = self._expression[0]
         checked = set()
@@ -178,7 +190,10 @@ class DotExpression(Expression):
 
 class SubscriptableExpression(Expression):
     def _evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self,
+        key: Optional[Iterable[Union[str, Expression]]] = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ) -> Any:
         operand = self._expression[0]._evaluate(key=key, my=my, target=target)
         index = self._expression[1]._evaluate(key=key, my=my, target=target)
@@ -187,7 +202,10 @@ class SubscriptableExpression(Expression):
 
 class AttributeExpression(Expression):
     def _evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self,
+        key: Optional[Iterable[Union[str, Expression]]] = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ) -> Any:
         def find_scope(current_key):
             if len(current_key) > 0:
@@ -242,7 +260,10 @@ class UnaryExpression(Expression):
     operator_map = {"-": None, "!": not_operator}
 
     def _evaluate(
-        self, key: List[str] = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self,
+        key: Optional[Iterable[Union[str, Expression]]] = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ):
         operand = self._expression[1]._evaluate(key=key, my=my, target=target)
         return self.operator_map[self._expression[0]](operand)
@@ -288,7 +309,10 @@ class ArithmeticExpression(Expression):
         return False
 
     def _evaluate(
-        self, key: List[str] = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self,
+        key: Optional[Iterable[Union[str, Expression]]] = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ):
         result = self._expression[0]._evaluate(key=key, my=my, target=target)
         for position in range(0, len(self._expression) - 1, 2):

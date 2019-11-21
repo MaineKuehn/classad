@@ -1,6 +1,6 @@
 import pyparsing as pp
 
-from typing import Iterable, Any, TYPE_CHECKING, Union
+from typing import Iterable, Any, TYPE_CHECKING, Union, Optional
 
 if TYPE_CHECKING:
     from ._expression import ClassAd
@@ -18,7 +18,10 @@ class Expression:
         return self._evaluate(key=key, my=my, target=target)
 
     def _evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self,
+        key: "Optional[Iterable[str, Expression]]" = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ) -> Any:
         return NotImplemented
 
@@ -30,12 +33,10 @@ class Expression:
             if len(tokens) == 1:
                 return tokens[0]
             else:
-                expression = []
-                for token in tokens:
-                    if isinstance(token, pp.ParseResults):
-                        expression.append(token[0])
-                    else:
-                        expression.append(token)
+                expression = [
+                    token[0] if isinstance(token, pp.ParseResults) else token
+                    for token in tokens
+                ]
                 result._expression = tuple(expression)
         else:
             result._expression = tokens
@@ -50,12 +51,18 @@ class Expression:
 
 class PrimitiveExpression(Expression):
     def evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self,
+        key: Optional[Iterable[Union[str, Expression]]] = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ) -> Any:
         return self
 
     def _evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self,
+        key: Optional[Iterable[Union[str, Expression]]] = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
     ) -> Any:
         return self
 
