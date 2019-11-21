@@ -84,9 +84,7 @@ class ClassAd(Expression, MutableMapping):
         return result
 
     def __eq__(self, other):
-        if type(self) == type(other):
-            return self._data == other._data
-        return False
+        return HTCBool(type(self) == type(other) and self._data == other._data)
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>: {self._data}"
