@@ -139,19 +139,20 @@ class TernaryExpression(Expression):
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
-        result = self._expression[0]._evaluate(key=key, my=my, target=target)
-        if self._expression[1] is None:
+        predicate, if_true, if_false = self._expression
+        result = predicate._evaluate(key=key, my=my, target=target)
+        if if_true is None:
             if isinstance(result, Undefined):
-                return self._expression[2]._evaluate(key=key, my=my, target=target)
+                return if_false._evaluate(key=key, my=my, target=target)
             else:
                 return result
         if isinstance(result, Undefined):
             return Undefined()
         if isinstance(result, HTCBool):
             if result:
-                return self._expression[1]._evaluate(key=key, my=my, target=target)
+                return if_true._evaluate(key=key, my=my, target=target)
             elif not result:
-                return self._expression[2]._evaluate(key=key, my=my, target=target)
+                return if_false._evaluate(key=key, my=my, target=target)
         return Error()
 
 
