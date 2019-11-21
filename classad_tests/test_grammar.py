@@ -1,7 +1,7 @@
 import pytest
 
 from classad import _grammar, quantize, parse
-from classad._expression import ArithmeticExpression, ClassAd
+from classad._expression import ArithmeticExpression, ClassAd, AttributeExpression
 from classad._primitives import (
     Error,
     Undefined,
@@ -225,3 +225,19 @@ class TestGrammar(object):
 
     def test_subscriptable_expression(self):
         assert parse("[a=1;b={1,d,3};c=b[a];d=4]").evaluate("c") == HTCInt(4)
+
+    def test_string_literals(self):
+        double_quote = parse('a = "test"')
+        assert type(double_quote["a"]) == HTCStr
+        assert double_quote["a"] == HTCStr("test")
+        single_quote = parse("a = 'test'")
+        assert type(single_quote["a"]) == AttributeExpression
+        assert single_quote["a"]._expression == "test"
+
+    def test_strcat(self):
+        classad = """
+        SlotID = 5
+        result = strcat("slot", SlotID+10, "_State")
+        """
+        assert parse(classad).evaluate("result") == HTCStr("slot15_State")
+        assert parse("strcat(Undefined, 1)").evaluate() == Error()
