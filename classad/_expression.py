@@ -24,9 +24,9 @@ class ClassAd(Expression, MutableMapping):
 
     def __init__(self):
         super().__init__()
-        self._data = OrderedDict()
+        self._data = dict()
 
-    def __setitem__(self, key: str, value: Expression) -> None:
+    def __setitem__(self, key: Union[str, Expression], value: Expression) -> None:
         """
         Keynames that are reserved and, therefore, cannot be used: error, false, is,
             isnt, parent, true, undefined
@@ -39,10 +39,10 @@ class ClassAd(Expression, MutableMapping):
             raise ValueError(f"{key} is a reserved name")
         self._data[key] = value
 
-    def __delitem__(self, key: str) -> None:
+    def __delitem__(self, key: Union[str, Expression]) -> None:
         self._data.pop(key, None)
 
-    def __getitem__(self, key: Iterable) -> Expression:
+    def __getitem__(self, key: Iterable[Union[str, Expression]]) -> Expression:
         if isinstance(key, str):
             key = [key]
         expression = self._data

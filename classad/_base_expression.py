@@ -11,7 +11,7 @@ class Expression:
     _expression: "Expression"
 
     def evaluate(
-        self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
+        self, key: Optional[Iterable] = None, my: "Optional[ClassAd]" = None, target: "Optional[ClassAd]" = None
     ) -> Any:
         if isinstance(key, str):
             key = key.split(".")
@@ -61,12 +61,12 @@ class PrimitiveExpression(Expression):
 
     def __htc_eq__(
         self, b: "PrimitiveExpression"
-    ) -> "Union[PrimitiveExpression, Undefined, Error]":
+    ) -> "Union[HTCBool, Undefined, Error]":
         return NotImplemented
 
     def __htc_ne__(
         self, b: "PrimitiveExpression"
-    ) -> "Union[PrimitiveExpression, Undefined, Error]":
+    ) -> "Union[HTCBool, Undefined, Error]":
         return NotImplemented
 
     def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
@@ -86,7 +86,7 @@ class PrimitiveExpression(Expression):
 
         .. Warning:
             The `is` operator for strings is case-sensitive while it isn't for
-            the equality operator.
+            the HTCondor ``==`` operator.
 
         .. code:
             parse('("ABC" =?= "abc")').evaluate()  # result: HTCBool(False)
@@ -109,7 +109,7 @@ class PrimitiveExpression(Expression):
 
         .. Warning:
             The `isnt` operator for strings is case-sensitive while it isn't for
-            the inequality operator.
+            the HTCondor ``!=`` operator..
 
         .. code:
             parse('("ABC" =!= "abc")').evaluate()  # result: HTCBool(True)
