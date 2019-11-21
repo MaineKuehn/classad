@@ -1,7 +1,7 @@
 import pyparsing as pp
 
+from classad._base_expression import Expression
 from classad._expression import (
-    Expression,
     ClassAd,
     AttributeExpression,
     FunctionExpression,
