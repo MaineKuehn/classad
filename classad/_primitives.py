@@ -1,6 +1,8 @@
 """
 Literal constants: integer, float, string, boolean, error, or undefined
 """
+from typing import Union
+
 from classad._base_expression import PrimitiveExpression
 
 
@@ -15,7 +17,9 @@ class Undefined(PrimitiveExpression):
     def __bool__(self):
         raise TypeError
 
-    def __htc_eq__(self, other):
+    def __htc_eq__(
+        self, other: PrimitiveExpression
+    ) -> "Union[PrimitiveExpression, Undefined, Error]":
         if isinstance(other, Error):
             return NotImplemented
         return Undefined()
@@ -48,15 +52,15 @@ class Undefined(PrimitiveExpression):
         __lt__
     ) = __le__ = __ge__ = __gt__ = __ne__ = __rand__ = __ror__ = __htc_ne__ = __htc_eq__
 
-    def __htc_is__(self, other):
+    def __htc_is__(self, other: PrimitiveExpression) -> "HTCBool":
         if type(self) == type(other):
             return HTCBool(True)
         return HTCBool(False)
 
-    def __htc_isnt__(self, other):
-        return not self.__htc_is__(other)
+    def __htc_isnt__(self, other: PrimitiveExpression) -> "HTCBool":
+        return HTCBool(not self.__htc_is__(other))
 
-    def __htc_not__(self):
+    def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return Undefined()
 
     def __repr__(self):
@@ -74,7 +78,9 @@ class Error(PrimitiveExpression):
     def __bool__(self):
         raise TypeError
 
-    def __htc_eq__(self, other):
+    def __htc_eq__(
+        self, other: PrimitiveExpression
+    ) -> "Union[PrimitiveExpression, Undefined, Error]":
         return Error()
 
     __add__ = (
@@ -101,25 +107,19 @@ class Error(PrimitiveExpression):
         __gt__
     ) = __ne__ = __and__ = __rand__ = __or__ = __ror__ = __htc_ne__ = __htc_eq__
 
-    def __htc_is__(self, other):
+    def __htc_is__(self, other: PrimitiveExpression) -> "HTCBool":
         if type(self) == type(other):
-            return HTCBool(1)
-        return HTCBool(0)
+            return HTCBool(True)
+        return HTCBool(False)
 
-    def __htc_isnt__(self, other):
-        return not self.__is__(other)
+    def __htc_isnt__(self, other: PrimitiveExpression) -> "HTCBool":
+        return HTCBool(not self.__htc_is__(other))
 
-    def __htc_not__(self):
+    def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return Error()
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
-
-
-class Attribute:
-    """An attribute is the tuple from attribute name and expression."""
-
-    pass
 
 
 class HTCInt(int, PrimitiveExpression):
@@ -194,31 +194,34 @@ class HTCInt(int, PrimitiveExpression):
             return HTCBool(not result)
         return result
 
-    def __htc_eq__(self, other):
+    def __htc_eq__(
+        self, other: PrimitiveExpression
+    ) -> Union[PrimitiveExpression, Undefined, Error]:
         if type(self) == type(other) or isinstance(other, HTCFloat):
             return HTCBool(super().__eq__(other))
         elif isinstance(other, Undefined) or isinstance(other, Error):
             return NotImplemented
         return Error()
 
-    def __htc_ne__(self, other):
+    def __htc_ne__(
+        self, other: PrimitiveExpression
+    ) -> Union[PrimitiveExpression, Undefined, Error]:
         result = self.__htc_eq__(other)
         if isinstance(result, HTCBool):
             return HTCBool(not result)
         return result
 
-    def __htc_is__(self, other):
-        """Case-sensitive comparison"""
+    def __htc_is__(self, other: PrimitiveExpression) -> "HTCBool":
         if type(self) == type(other) and self == other:
             return HTCBool(True)
         return HTCBool(False)
 
-    def __htc_isnt__(self, other):
+    def __htc_isnt__(self, other: PrimitiveExpression) -> "HTCBool":
         if type(self) != type(other) or self != other:
             return HTCBool(True)
         return HTCBool(False)
 
-    def __htc_not__(self):
+    def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return Error()
 
     def __repr__(self):
@@ -226,7 +229,7 @@ class HTCInt(int, PrimitiveExpression):
 
 
 class HTCList(tuple, PrimitiveExpression):
-    def __htc_not__(self, other):
+    def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return Error()
 
     def __repr__(self):
@@ -234,28 +237,32 @@ class HTCList(tuple, PrimitiveExpression):
 
 
 class HTCStr(str, PrimitiveExpression):
-    def __htc_eq__(self, other):
+    def __htc_eq__(
+        self, other: PrimitiveExpression
+    ) -> Union[PrimitiveExpression, Undefined, Error]:
         if isinstance(other, str):
-            return self.lower() == other.lower()
+            return HTCBool(self.lower() == other.lower())
         return NotImplemented
 
-    def __htc_ne__(self, other):
+    def __htc_ne__(
+        self, other: PrimitiveExpression
+    ) -> Union[PrimitiveExpression, Undefined, Error]:
         result = self.__htc_eq__(other)
-        if isinstance(result, bool):
-            return not result
+        if isinstance(result, HTCBool):
+            return HTCBool(not result)
         return result
 
-    def __htc_is__(self, other):
+    def __htc_is__(self, other: PrimitiveExpression) -> "HTCBool":
         if type(self) == type(other) and super().__eq__(other):
-            return HTCBool(1)
-        return HTCBool(0)
+            return HTCBool(True)
+        return HTCBool(False)
 
-    def __htc_isnt__(self, other):
+    def __htc_isnt__(self, other: PrimitiveExpression) -> "HTCBool":
         if type(self) != type(other) or super().__ne__(other):
-            return HTCBool(1)
-        return HTCBool(0)
+            return HTCBool(True)
+        return HTCBool(False)
 
-    def __htc_not__(self):
+    def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return Error()
 
     def __repr__(self):
@@ -272,7 +279,7 @@ class HTCFloat(float, PrimitiveExpression):
 
     __rmul__ = __mul__
 
-    def __htc_not__(self):
+    def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return Error()
 
     def __repr__(self):
@@ -306,7 +313,7 @@ class HTCBool(PrimitiveExpression):
                 return other
         return Error()
 
-    def __htc_not__(self):
+    def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return HTCBool(not self._value)
 
     def __repr__(self):

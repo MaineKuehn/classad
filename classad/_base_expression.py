@@ -1,9 +1,10 @@
 import pyparsing as pp
 
-from typing import Iterable, Any, TYPE_CHECKING
+from typing import Iterable, Any, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from ._expression import ClassAd
+    from ._primitives import Undefined, Error, HTCBool
 
 
 class Expression:
@@ -57,3 +58,19 @@ class PrimitiveExpression(Expression):
         self, key: Iterable = None, my: "ClassAd" = None, target: "ClassAd" = None
     ) -> Any:
         return self
+
+    def __htc_eq__(
+        self, b: "PrimitiveExpression"
+    ) -> "Union[PrimitiveExpression, Undefined, Error]":
+        return NotImplemented
+
+    def __htc_ne__(
+        self, b: "PrimitiveExpression"
+    ) -> "Union[PrimitiveExpression, Undefined, Error]":
+        return NotImplemented
+
+    def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
+        return NotImplemented
+
+    def __htc_isnt__(self, b: "PrimitiveExpression") -> "HTCBool":
+        return NotImplemented
