@@ -88,9 +88,9 @@ class TestGrammar(object):
         )
 
     def test_join(self):
-        assert parse('join(", ", "a", "b", "c")').evaluate() == "a, b, c"
-        assert parse('join(split("a b c"))').evaluate() == "abc"
-        assert parse('join(";", split("a b c"))').evaluate() == "a;b;c"
+        assert parse('join(", ", "a", "b", "c")').evaluate() == HTCStr("a, b, c")
+        assert parse('join(split("a b c"))').evaluate() == HTCStr("abc")
+        assert parse('join(";", split("a b c"))').evaluate() == HTCStr("a;b;c")
 
     def test_parse(self):
         classad = "[a = 1; b = 2]"
@@ -136,25 +136,27 @@ class TestGrammar(object):
     def test_aggregates(self):
         result = parse("{ 10, [foo={10}], {17, [bar=3]} }")
         assert len(result) == 3
-        assert parse("{10, 17*2, 30}[1]").evaluate() == 34
+        assert parse("{10, 17*2, 30}[1]").evaluate() == HTCInt(34)
 
     def test_attribute_references(self):
-        assert parse("[a=1;b=a]").evaluate(key="b") == 1
-        assert parse("[a=2;b=[c=1;d=a]]").evaluate(key="b.d") == 2
+        assert parse("[a=1;b=a]").evaluate(key="b") == HTCInt(1)
+        assert parse("[a=2;b=[c=1;d=a]]").evaluate(key="b.d") == HTCInt(2)
         assert parse("[a=2;b=[c=1;d=a+f];e=[f=10]]").evaluate(key="b.d") == Undefined()
-        assert parse("[a=3;b=[c=1;d=[e=5;f=a+c+e]]]").evaluate(key="b.d.f") == 9
-        assert parse("[a=3;b=[a=2;c=1;d=[e=5;f=a+c+e]]]").evaluate(key="b.d.f") == 8
+        assert parse("[a=3;b=[c=1;d=[e=5;f=a+c+e]]]").evaluate(key="b.d.f") == HTCInt(9)
+        assert parse("[a=3;b=[a=2;c=1;d=[e=5;f=a+c+e]]]").evaluate(
+            key="b.d.f"
+        ) == HTCInt(8)
         assert (
             parse("[a=3;b=[a=2;c=1;d=[e=5;f=a+b+c]]]").evaluate(key="b.d.f") == Error()
         )
-        assert parse("[a=2;b=[a=1;d=.a]]").evaluate(key="b.d") == 2
-        assert parse("[a=3;b=[a=1;d=[a=5;f=a+.a]]]").evaluate(key="b.d.f") == 8
+        assert parse("[a=2;b=[a=1;d=.a]]").evaluate(key="b.d") == HTCInt(2)
+        assert parse("[a=3;b=[a=1;d=[a=5;f=a+.a]]]").evaluate(key="b.d.f") == HTCInt(8)
         assert parse("[a=2;b=[c=1;d=.c]]").evaluate(key="b.d") == Undefined()
-        assert parse("[a=1;b=[c=5].c]").evaluate(key="b") == 5
-        assert parse("[a=1;b=[c=5].a]").evaluate(key="b") == 1
-        assert parse("[a=1;b=[a=2;c=[b=.a]];d=.b.c.a]").evaluate(key="d") == 2
-        assert parse("[a=1;b=[a=2;c=[b=.a]];d=.b.c.b]").evaluate(key="d") == 1
-        assert parse("[a=1;b=[a=2;c=[b=a]];d=.b.c.b]").evaluate(key="d") == 2
+        assert parse("[a=1;b=[c=5].c]").evaluate(key="b") == HTCInt(5)
+        assert parse("[a=1;b=[c=5].a]").evaluate(key="b") == HTCInt(1)
+        assert parse("[a=1;b=[a=2;c=[b=.a]];d=.b.c.a]").evaluate(key="d") == HTCInt(2)
+        assert parse("[a=1;b=[a=2;c=[b=.a]];d=.b.c.b]").evaluate(key="d") == HTCInt(1)
+        assert parse("[a=1;b=[a=2;c=[b=a]];d=.b.c.b]").evaluate(key="d") == HTCInt(2)
         assert parse("[a=1;b=[a=2;c=[b=.a]];d=.a.b.a.b]").evaluate(key="d") == Error()
 
     def test_super(self):
@@ -213,13 +215,13 @@ class TestGrammar(object):
         assert not parse("[a=True;b=!a]").evaluate("b")
 
     def test_ternary(self):
-        assert parse("true?10:undefined").evaluate() == 10
-        assert parse('false?error:"foo"').evaluate() == "foo"
+        assert parse("true?10:undefined").evaluate() == HTCInt(10)
+        assert parse('false?error:"foo"').evaluate() == HTCStr("foo")
         assert parse("Undefined?True:False").evaluate() == Undefined()
         assert parse("10==True?True:False").evaluate() == Error()
         assert parse("5?True:False").evaluate() == Error()
         assert parse("True?:1").evaluate()
-        assert parse("Undefined?:1").evaluate() == 1
+        assert parse("Undefined?:1").evaluate() == HTCInt(1)
 
     def test_subscriptable_expression(self):
-        assert parse("[a=1;b={1,d,3};c=b[a];d=4]").evaluate("c") == 4
+        assert parse("[a=1;b={1,d,3};c=b[a];d=4]").evaluate("c") == HTCInt(4)

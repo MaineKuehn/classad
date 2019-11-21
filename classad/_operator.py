@@ -19,7 +19,7 @@ def eq_operator(
 
     .. code:: python3
         parse("10 == Undefined").evaluate()  # result: Undefined
-        HTCBool(True) == Undefined()  # result: False
+        HTCBool(True) == Undefined()  # result: HTCBool(False)
     """
     result = a.__htc_eq__(b)
     if result == NotImplemented:
@@ -31,7 +31,7 @@ def ne_operator(
     a: PrimitiveExpression, b: PrimitiveExpression
 ) -> Union[HTCBool, Undefined, Error]:
     """
-    Inequality operator as defined by classad specificiation, i.e. operator does
+    Inequality operator as defined by classad specification, i.e. operator does
     not only return :py:class:`~.HTCBool` but also :py:class:`~.Undefined` or
     :py:class:`~.Error` if necessary.
 
@@ -42,7 +42,7 @@ def ne_operator(
 
     .. code:: python3
         parse("10 != Undefined").evaluate()  # result: Undefined
-        HTCBool(True) != Undefined()  # result: True
+        HTCBool(True) != Undefined()  # result: HTCBool(True)
     """
     result = a.__htc_ne__(b)
     if result == NotImplemented:
@@ -55,6 +55,6 @@ def not_operator(a: PrimitiveExpression) -> Union[HTCBool, Undefined, Error]:
     Logical not operator as defined by classad specification.
 
     .. code:: python3
-        parse("!False").evaluate()  # result: True
+        parse("!False").evaluate()  # result: HTCBool(True)
     """
     return a.__htc_not__()
