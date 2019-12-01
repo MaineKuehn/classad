@@ -41,6 +41,9 @@ undefined_literal = pp.CaselessKeyword("undefined").setParseAction(lambda: Undef
 parent_literal = pp.CaselessKeyword("parent").setParseAction(
     lambda s, l, t: NamedExpression.from_grammar(t[0])
 )
+my_literal = pp.CaselessKeyword("my").setParseAction(
+    lambda s, l, t: NamedExpression.from_grammar(t[0])
+)
 target_literal = pp.CaselessKeyword("target").setParseAction(
     lambda s, l, t: NamedExpression.from_grammar(t[0])
 )

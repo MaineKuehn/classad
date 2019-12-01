@@ -206,19 +206,23 @@ class AttributeExpression(Expression):
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
-        def find_scope(current_key):
+        def find_scope(current_key, classad=my):
             if len(current_key) > 0:
-                return my[current_key]
-            return my
+                return classad[current_key]
+            return classad
 
+        selected_classad = my
         value = Undefined()
         if self._expression[0] == ".":
             key = scope_up(self._expression[1])
             expression = self._expression[1][-1]
+        elif self._expression[0] == "target":
+            selected_classad = target
+            expression = self._expression[1]
         else:
             expression = self._expression
         try:
-            context = find_scope(key)
+            context = find_scope(key, classad=selected_classad)
         except TypeError:
             return Error()
         while isinstance(value, Undefined):
@@ -227,7 +231,7 @@ class AttributeExpression(Expression):
                 if len(key) == 0:
                     return Undefined()
                 key = scope_up(key)
-                context = find_scope(key)
+                context = find_scope(key, classad=selected_classad)
         if isinstance(value, AttributeExpression):
             return value._evaluate(key=key, my=my, target=target)
         return value
