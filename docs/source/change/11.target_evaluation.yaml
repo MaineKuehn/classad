@@ -1,0 +1,10 @@
+category: added
+summary: "Evaluation of target classad"
+description: |
+  The project can now evaluate two classads in context. For this, the evaluation
+  of :py:class:`~.AttributeExpression`s implements the evaluation of the
+  :py:class:`~.NamedExpression` *target*.
+issues:
+  - 9
+pull requests:
+  - 11
