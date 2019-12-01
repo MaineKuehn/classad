@@ -324,8 +324,20 @@ class HTCBool(PrimitiveExpression):
         super().__init__()
         self._value = True if x != 0 else False
 
+    def __add__(self, other):
+        return Error()
+
+    __sub__ = __mul__ = __truediv__ = __gt__ = __ge__ = __le__ = __lt__ = __add__
+
     def __eq__(self, other):
-        return type(self) == type(other) and self._value == other._value
+        return (
+            type(self) == type(other) and self._value == other._value
+        ) or other is self._value
+
+    def __ne__(self, other):
+        return (
+            type(self) == type(other) and self._value != other._value
+        ) or other is not self._value
 
     def __bool__(self):
         return self._value
@@ -345,6 +357,22 @@ class HTCBool(PrimitiveExpression):
             if isinstance(other, HTCBool) or isinstance(other, Undefined):
                 return other
         return Error()
+
+    def __htc_eq__(
+        self, other: PrimitiveExpression
+    ) -> Union[PrimitiveExpression, Undefined, Error]:
+        if isinstance(other, HTCBool):
+            return HTCBool(self._value is other._value)
+        elif isinstance(other, Undefined) or isinstance(other, Error):
+            return NotImplemented
+        elif isinstance(other, bool):
+            return HTCBool(self._value is other)
+        return Error()
+
+    def __htc_ne__(
+        self, other: "PrimitiveExpression"
+    ) -> "Union[HTCBool, Undefined, Error]":
+        return self.__htc_not__().__htc_eq__(other)
 
     def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return HTCBool(not self._value)
