@@ -1,0 +1,8 @@
+category: changed
+summary: "Lookup mechanism of attributes"
+description: |
+  The lookup mechanism for attributes now also considers the target classad if
+  an attribute cannot be found in the local context. However, this is valid
+  only for attributes that are neither referencing ``my`` nor ``target``.
+pull requests:
+  - 13
