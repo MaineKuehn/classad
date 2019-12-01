@@ -114,47 +114,33 @@ class Error(PrimitiveExpression):
 
 class HTCInt(int, PrimitiveExpression):
     def __add__(self, other):
-        if isinstance(other, HTCInt):
+        if isinstance(other, int):
             return HTCInt(super().__add__(other))
-        elif (
-            isinstance(other, HTCFloat)
-            or isinstance(other, Undefined)
-            or isinstance(other, Error)
-        ):
+        elif isinstance(other, (float, Undefined, Error)):
             return NotImplemented
         return Error()
 
+    __radd__ = __add__
+
     def __sub__(self, other):
-        if isinstance(other, HTCInt):
+        if isinstance(other, int):
             return HTCInt(super().__sub__(other))
-        elif (
-            isinstance(other, HTCFloat)
-            or isinstance(other, Undefined)
-            or isinstance(other, Error)
-        ):
+        elif isinstance(other, (float, Undefined, Error)):
             return NotImplemented
         return Error()
 
     def __mul__(self, other):
-        if isinstance(other, HTCInt):
+        if isinstance(other, int):
             return HTCInt(super().__mul__(other))
-        elif (
-            isinstance(other, HTCFloat)
-            or isinstance(other, Undefined)
-            or isinstance(other, Error)
-        ):
+        elif isinstance(other, (float, Undefined, Error)):
             return NotImplemented
         return Error()
 
     def __truediv__(self, other):
         try:
-            if isinstance(other, HTCInt):
+            if isinstance(other, int):
                 return HTCFloat(super().__truediv__(other))
-            elif (
-                isinstance(other, HTCFloat)
-                or isinstance(other, Undefined)
-                or isinstance(other, Error)
-            ):
+            elif isinstance(other, (float, Undefined, Error)):
                 return NotImplemented
             return Error()
         except ZeroDivisionError:
@@ -162,35 +148,45 @@ class HTCInt(int, PrimitiveExpression):
 
     def __lt__(self, other):
         try:
-            return HTCBool(super().__lt__(other))
+            result = super().__lt__(other)
         except TypeError:
             return Error()
+        else:
+            return result if result is NotImplemented else HTCBool(result)
 
     def __ge__(self, other):
-        result = self.__lt__(other)
-        if isinstance(result, HTCBool):
-            return HTCBool(not result)
-        return result
+        try:
+            result = super().__ge__(other)
+        except TypeError:
+            return Error()
+        else:
+            return result if result is NotImplemented else HTCBool(result)
 
     def __gt__(self, other):
         try:
-            return HTCBool(super().__gt__(other))
+            result = super().__gt__(other)
         except TypeError:
             return Error()
+        else:
+            return result if result is NotImplemented else HTCBool(result)
 
     def __le__(self, other):
-        result = self.__gt__(other)
-        if isinstance(result, HTCBool):
-            return HTCBool(not result)
-        return result
+        try:
+            result = super().__le__(other)
+        except TypeError:
+            return Error()
+        else:
+            return result if result is NotImplemented else HTCBool(result)
 
     def __htc_eq__(
         self, other: PrimitiveExpression
     ) -> Union[PrimitiveExpression, Undefined, Error]:
-        if type(self) == type(other) or isinstance(other, HTCFloat):
+        if isinstance(other, int):
             return HTCBool(super().__eq__(other))
-        elif isinstance(other, Undefined) or isinstance(other, Error):
+        elif isinstance(other, (Undefined, Error, HTCFloat)):
             return NotImplemented
+        elif isinstance(other, float):
+            return HTCBool(self == other)
         return Error()
 
     def __htc_ne__(
@@ -202,14 +198,18 @@ class HTCInt(int, PrimitiveExpression):
         return result
 
     def __eq__(self, other: PrimitiveExpression) -> "HTCBool":
-        if type(self) == type(other) and super().__eq__(other):
-            return HTCBool(True)
+        if isinstance(other, int):
+            return HTCBool(super().__eq__(other))
+        elif isinstance(other, float):
+            return NotImplemented
         return HTCBool(False)
 
     def __ne__(self, other: PrimitiveExpression) -> "HTCBool":
-        if type(self) != type(other) or super().__ne__(other):
-            return HTCBool(True)
-        return HTCBool(False)
+        if isinstance(other, int):
+            return HTCBool(super().__ne__(other))
+        elif isinstance(other, float):
+            return NotImplemented
+        return HTCBool(True)
 
     def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return Error()
@@ -261,9 +261,9 @@ class HTCStr(str, PrimitiveExpression):
 
 class HTCFloat(float, PrimitiveExpression):
     def __mul__(self, other):
-        if isinstance(other, HTCFloat) or isinstance(other, HTCInt):
+        if isinstance(other, (int, float)):
             return HTCFloat(super().__mul__(other))
-        elif isinstance(other, Undefined) or isinstance(other, Error):
+        elif isinstance(other, (Undefined, Error)):
             return NotImplemented
         return Error()
 
@@ -271,6 +271,33 @@ class HTCFloat(float, PrimitiveExpression):
 
     def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return Error()
+
+    def __htc_eq__(
+        self, other: PrimitiveExpression
+    ) -> Union[PrimitiveExpression, Undefined, Error]:
+        if isinstance(other, (int, float)):
+            return HTCBool(super().__eq__(other))
+        elif isinstance(other, (Undefined, Error)):
+            return NotImplemented
+        return Error()
+
+    def __htc_ne__(
+        self, other: PrimitiveExpression
+    ) -> Union[PrimitiveExpression, Undefined, Error]:
+        result = self.__htc_eq__(other)
+        if isinstance(result, HTCBool):
+            return HTCBool(not result)
+        return result
+
+    def __eq__(self, other: PrimitiveExpression) -> "HTCBool":
+        if isinstance(other, (int, float)):
+            return HTCBool(super().__eq__(other))
+        return HTCBool(False)
+
+    def __ne__(self, other: PrimitiveExpression) -> "HTCBool":
+        if isinstance(other, (int, float)):
+            return HTCBool(super().__ne__(other))
+        return HTCBool(False)
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>: {self}"
@@ -281,15 +308,27 @@ class HTCBool(PrimitiveExpression):
         super().__init__()
         self._value = True if x != 0 else False
 
+    def __add__(self, other):
+        return Error()
+
+    __sub__ = __mul__ = __truediv__ = __gt__ = __ge__ = __le__ = __lt__ = __add__
+
     def __eq__(self, other):
-        return type(self) == type(other) and self._value == other._value
+        return (
+            type(self) == type(other) and self._value == other._value
+        ) or other is self._value
+
+    def __ne__(self, other):
+        return (
+            type(self) == type(other) and self._value != other._value
+        ) or other is not self._value
 
     def __bool__(self):
         return self._value
 
     def __or__(self, other):
         if not self._value:
-            if isinstance(other, HTCBool) or isinstance(other, Undefined):
+            if isinstance(other, (HTCBool, Undefined)):
                 return other
         elif self._value:
             return HTCBool(True)
@@ -299,9 +338,25 @@ class HTCBool(PrimitiveExpression):
         if not self._value:
             return HTCBool(False)
         elif self._value:
-            if isinstance(other, HTCBool) or isinstance(other, Undefined):
+            if isinstance(other, (HTCBool, Undefined)):
                 return other
         return Error()
+
+    def __htc_eq__(
+        self, other: PrimitiveExpression
+    ) -> Union[PrimitiveExpression, Undefined, Error]:
+        if isinstance(other, HTCBool):
+            return HTCBool(self._value is other._value)
+        elif isinstance(other, (Undefined, Error)):
+            return NotImplemented
+        elif isinstance(other, bool):
+            return HTCBool(self._value is other)
+        return Error()
+
+    def __htc_ne__(
+        self, other: "PrimitiveExpression"
+    ) -> "Union[HTCBool, Undefined, Error]":
+        return self.__htc_not__().__htc_eq__(other)
 
     def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return HTCBool(not self._value)
