@@ -225,7 +225,7 @@ class HTCInt(int, PrimitiveExpression):
             return HTCBool(super().__ne__(other))
         elif isinstance(other, float):
             return NotImplemented
-        return HTCBool(False)
+        return HTCBool(True)
 
     def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return Error()
