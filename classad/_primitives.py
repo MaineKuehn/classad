@@ -116,11 +116,7 @@ class HTCInt(int, PrimitiveExpression):
     def __add__(self, other):
         if isinstance(other, int):
             return HTCInt(super().__add__(other))
-        elif (
-            isinstance(other, float)
-            or isinstance(other, Undefined)
-            or isinstance(other, Error)
-        ):
+        elif isinstance(other, (float, Undefined, Error)):
             return NotImplemented
         return Error()
 
@@ -129,22 +125,14 @@ class HTCInt(int, PrimitiveExpression):
     def __sub__(self, other):
         if isinstance(other, int):
             return HTCInt(super().__sub__(other))
-        elif (
-            isinstance(other, float)
-            or isinstance(other, Undefined)
-            or isinstance(other, Error)
-        ):
+        elif isinstance(other, (float, Undefined, Error)):
             return NotImplemented
         return Error()
 
     def __mul__(self, other):
         if isinstance(other, int):
             return HTCInt(super().__mul__(other))
-        elif (
-            isinstance(other, float)
-            or isinstance(other, Undefined)
-            or isinstance(other, Error)
-        ):
+        elif isinstance(other, (float, Undefined, Error)):
             return NotImplemented
         return Error()
 
@@ -152,11 +140,7 @@ class HTCInt(int, PrimitiveExpression):
         try:
             if isinstance(other, int):
                 return HTCFloat(super().__truediv__(other))
-            elif (
-                isinstance(other, float)
-                or isinstance(other, Undefined)
-                or isinstance(other, Error)
-            ):
+            elif isinstance(other, (float, Undefined, Error)):
                 return NotImplemented
             return Error()
         except ZeroDivisionError:
@@ -279,7 +263,7 @@ class HTCFloat(float, PrimitiveExpression):
     def __mul__(self, other):
         if isinstance(other, (int, float)):
             return HTCFloat(super().__mul__(other))
-        elif isinstance(other, (int, float)):
+        elif isinstance(other, (Undefined, Error)):
             return NotImplemented
         return Error()
 
@@ -293,7 +277,7 @@ class HTCFloat(float, PrimitiveExpression):
     ) -> Union[PrimitiveExpression, Undefined, Error]:
         if isinstance(other, (int, float)):
             return HTCBool(super().__eq__(other))
-        elif isinstance(other, Undefined) or isinstance(other, Error):
+        elif isinstance(other, (Undefined, Error)):
             return NotImplemented
         return Error()
 
@@ -344,7 +328,7 @@ class HTCBool(PrimitiveExpression):
 
     def __or__(self, other):
         if not self._value:
-            if isinstance(other, HTCBool) or isinstance(other, Undefined):
+            if isinstance(other, (HTCBool, Undefined)):
                 return other
         elif self._value:
             return HTCBool(True)
@@ -354,7 +338,7 @@ class HTCBool(PrimitiveExpression):
         if not self._value:
             return HTCBool(False)
         elif self._value:
-            if isinstance(other, HTCBool) or isinstance(other, Undefined):
+            if isinstance(other, (HTCBool, Undefined)):
                 return other
         return Error()
 
@@ -363,7 +347,7 @@ class HTCBool(PrimitiveExpression):
     ) -> Union[PrimitiveExpression, Undefined, Error]:
         if isinstance(other, HTCBool):
             return HTCBool(self._value is other._value)
-        elif isinstance(other, Undefined) or isinstance(other, Error):
+        elif isinstance(other, (Undefined, Error)):
             return NotImplemented
         elif isinstance(other, bool):
             return HTCBool(self._value is other)
