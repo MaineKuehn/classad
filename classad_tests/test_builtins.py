@@ -46,7 +46,7 @@ def test_numbers(num_type):
         assert op(htc_value, htc_type(builtin_value)) == op(htc_value, builtin_value)
 
     for value in (2, 3, -3, 256, -127, 2 ** 8, 1e6) + (
-            () if num_type is HTCInt else (3-5, -3.5, 127.3, -123.2, 1e-8)
+        () if num_type is HTCInt else (3 - 5, -3.5, 127.3, -123.2, 1e-8)
     ):
         for operation in NUMERIC_OPERATORS + COMPARISON_OPERATORS:
             assert_similar(operation, HTCInt(1), num_type, value)
