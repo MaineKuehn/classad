@@ -37,7 +37,7 @@ import random as py_random
 from typing import TypeVar, List, Union, overload, Optional, Any
 
 from classad._grammar import parse
-from classad._base_expression import CompoundExpression
+from classad._base_expression import Expression
 from classad._primitives import (
     Undefined,
     Error,
@@ -59,12 +59,12 @@ def eval(expression: Any) -> literal_type:
     result of evaluating the contents of the string as a :py:class:`~.ClassAd`
     expression.
     """
-    if isinstance(expression, CompoundExpression):
+    if isinstance(expression, Expression):
         return expression
     return parse(expression)
 
 
-def unparse(attribute: CompoundExpression) -> str:
+def unparse(attribute: Expression) -> str:
     """
     This function looks up the value of the provided :py:attr:`attribute` and
     returns the unparsed version as a :py:class:`str`. The attribute's value is
