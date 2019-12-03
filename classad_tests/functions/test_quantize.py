@@ -46,3 +46,4 @@ class TestQuantize:
         assert isinstance(
             quantize(HTCInt(3), HTCList([HTCInt(1), HTCInt(2), HTCStr("A")])), Error
         )
+        assert quantize(HTCInt(3), HTCList([])) == Error()
