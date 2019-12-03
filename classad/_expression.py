@@ -91,6 +91,8 @@ class ClassAd(Expression, MutableMapping):
 
 
 class NamedExpression(Expression):
+    __slots__ = '_expression',
+
     @classmethod
     def from_grammar(cls, tokens):
         if "super" == tokens:
@@ -101,6 +103,8 @@ class NamedExpression(Expression):
 
 
 class FunctionExpression(Expression):
+    __slots__ = '_expression', '_name'
+
     def __init__(self, name, args):
         super().__init__()
         self._name = name
@@ -133,6 +137,8 @@ class FunctionExpression(Expression):
 
 
 class TernaryExpression(Expression):
+    __slots__ = '_expression',
+
     def _evaluate(
         self,
         key: Optional[Iterable[Union[str, Expression]]] = None,
@@ -157,6 +163,8 @@ class TernaryExpression(Expression):
 
 
 class DotExpression(Expression):
+    __slots__ = '_expression',
+
     def _evaluate(
         self,
         key: Optional[Iterable[Union[str, Expression]]] = None,
@@ -188,6 +196,8 @@ class DotExpression(Expression):
 
 
 class SubscriptableExpression(Expression):
+    __slots__ = '_expression',
+
     def _evaluate(
         self,
         key: Optional[Iterable[Union[str, Expression]]] = None,
@@ -200,6 +210,8 @@ class SubscriptableExpression(Expression):
 
 
 class AttributeExpression(Expression):
+    __slots__ = '_expression',
+
     def _evaluate(
         self,
         key: Optional[Iterable[Union[str, Expression]]] = None,
@@ -260,6 +272,8 @@ class AttributeExpression(Expression):
 
 
 class UnaryExpression(Expression):
+    __slots__ = '_expression',
+
     operator_map = {"-": None, "!": not_operator}
 
     def _evaluate(
@@ -273,6 +287,8 @@ class UnaryExpression(Expression):
 
 
 class ArithmeticExpression(Expression):
+    __slots__ = '_expression',
+
     operator_map = {
         "+": operator.add,
         "-": operator.sub,

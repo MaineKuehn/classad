@@ -8,6 +8,8 @@ if TYPE_CHECKING:
 
 
 class Expression:
+    __slots__ = ()
+
     _expression: "Expression"
 
     def evaluate(
@@ -53,6 +55,8 @@ class Expression:
 
 
 class PrimitiveExpression(Expression):
+    __slots__ = ()
+
     def evaluate(
         self,
         key: Optional[Iterable[Union[str, Expression]]] = None,

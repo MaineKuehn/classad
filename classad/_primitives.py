@@ -10,6 +10,7 @@ class Undefined(PrimitiveExpression):
     """
     The keyword ``UNDEFINED`` (case insensitive) represents the ``UNDEFINED`` value.
     """
+    __slots__ = ()
 
     def __bool__(self):
         raise TypeError
@@ -66,6 +67,7 @@ class Error(PrimitiveExpression):
     """
     The keyword ``ERROR`` (case insensitive) represents the ``ERROR`` value.
     """
+    __slots__ = ()
 
     def __bool__(self):
         raise TypeError
@@ -113,6 +115,8 @@ class Error(PrimitiveExpression):
 
 
 class HTCInt(int, PrimitiveExpression):
+    __slots__ = ()
+
     def __add__(self, other):
         if isinstance(other, int):
             return HTCInt(super().__add__(other))
@@ -219,6 +223,8 @@ class HTCInt(int, PrimitiveExpression):
 
 
 class HTCList(tuple, PrimitiveExpression):
+    __slots__ = ()
+
     def __htc_not__(self) -> "Union[HTCBool, Undefined, Error]":
         return Error()
 
@@ -227,6 +233,8 @@ class HTCList(tuple, PrimitiveExpression):
 
 
 class HTCStr(str, PrimitiveExpression):
+    __slots__ = ()
+
     def __htc_eq__(
         self, other: PrimitiveExpression
     ) -> Union[PrimitiveExpression, Undefined, Error]:
@@ -260,6 +268,8 @@ class HTCStr(str, PrimitiveExpression):
 
 
 class HTCFloat(float, PrimitiveExpression):
+    __slots__ = ()
+
     def __mul__(self, other):
         if isinstance(other, (int, float)):
             return HTCFloat(super().__mul__(other))
@@ -304,6 +314,8 @@ class HTCFloat(float, PrimitiveExpression):
 
 
 class HTCBool(PrimitiveExpression):
+    __slots__ = '_value',
+
     def __init__(self, x):
         super().__init__()
         self._value = True if x != 0 else False
