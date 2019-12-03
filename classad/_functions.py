@@ -414,7 +414,10 @@ def quantize(a, b):
                     return element
             except TypeError:
                 return Error()
-        return quantize(a, element)
+        try:
+            return quantize(a, element)
+        except UnboundLocalError:
+            return Error()
     else:
         try:
             quotient = HTCFloat(a / b)
