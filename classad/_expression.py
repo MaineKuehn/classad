@@ -211,29 +211,47 @@ class AttributeExpression(Expression):
                 return classad[current_key]
             return classad
 
+        the_key = key
         selected_classad = my
         value = Undefined()
         if self._expression[0] == ".":
-            key = scope_up(self._expression[1])
+            the_key = scope_up(self._expression[1])
             expression = self._expression[1][-1]
         elif self._expression[0] == "target":
+            if my is None or target is None:
+                return Undefined()
             selected_classad = target
             expression = self._expression[1]
+        elif self._expression[0] == "my":
+            if my is None or target is None:
+                return Undefined()
+            expression = self._expression
         else:
             expression = self._expression
         try:
-            context = find_scope(key, classad=selected_classad)
+            context = find_scope(the_key, classad=selected_classad)
         except TypeError:
             return Error()
         while isinstance(value, Undefined):
             value = context[expression]
             if isinstance(value, Undefined):
-                if len(key) == 0:
+                if len(the_key) == 0:
+                    if (
+                        target is not None
+                        and self._expression[0] != "."
+                        and self._expression[0] != "target"
+                        and self._expression[0] != "my"
+                        and selected_classad != target
+                    ):
+                        selected_classad = target
+                        the_key = key
+                        context = find_scope(the_key, classad=selected_classad)
+                        continue
                     return Undefined()
-                key = scope_up(key)
-                context = find_scope(key, classad=selected_classad)
+                the_key = scope_up(the_key)
+                context = find_scope(the_key, classad=selected_classad)
         if isinstance(value, AttributeExpression):
-            return value._evaluate(key=key, my=my, target=target)
+            return value._evaluate(key=the_key, my=my, target=target)
         return value
 
     @classmethod
