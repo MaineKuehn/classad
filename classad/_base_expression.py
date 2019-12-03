@@ -7,14 +7,14 @@ if TYPE_CHECKING:
     from ._primitives import Undefined, Error, HTCBool
 
 
-class Expression:
+class CompoundExpression:
     __slots__ = ()
 
-    _expression: "Expression"
+    _expression: "CompoundExpression"
 
     def evaluate(
         self,
-        key: "Optional[Iterable[Union[str, Expression]]]" = None,
+        key: "Optional[Iterable[Union[str, CompoundExpression]]]" = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
@@ -24,7 +24,7 @@ class Expression:
 
     def _evaluate(
         self,
-        key: "Optional[Iterable[Union[str, Expression]]]" = None,
+        key: "Optional[Iterable[Union[str, CompoundExpression]]]" = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
@@ -54,12 +54,12 @@ class Expression:
         return type(self) == type(other) and self._expression == other._expression
 
 
-class PrimitiveExpression(Expression):
+class PrimitiveExpression(CompoundExpression):
     __slots__ = ()
 
     def evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
@@ -67,7 +67,7 @@ class PrimitiveExpression(Expression):
 
     def _evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:

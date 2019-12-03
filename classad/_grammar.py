@@ -1,6 +1,6 @@
 import pyparsing as pp
 
-from classad._base_expression import Expression
+from classad._base_expression import CompoundExpression
 from classad._expression import (
     ClassAd,
     AttributeExpression,
@@ -250,7 +250,7 @@ expression << pp.Group(
             arithmetic_expression,
         )
     )
-).setParseAction(lambda s, l, t: Expression.from_grammar(t[0])).setName("expression")
+).setParseAction(lambda s, l, t: CompoundExpression.from_grammar(t[0])).setName("expression")
 
 
 def parse(content: str):

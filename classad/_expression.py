@@ -6,7 +6,7 @@ from typing import Any, Iterable, List, Iterator, Optional, Union
 
 from classad._operator import eq_operator, ne_operator, not_operator
 from classad._primitives import Error, Undefined, HTCBool
-from ._base_expression import Expression
+from ._base_expression import CompoundExpression
 from . import _functions
 
 
@@ -14,7 +14,7 @@ def scope_up(key: List[str]):
     return key[:-1]
 
 
-class ClassAd(Expression, MutableMapping):
+class ClassAd(CompoundExpression, MutableMapping):
     __slots__ = "_data"
 
     def __add__(self, other):
@@ -26,7 +26,7 @@ class ClassAd(Expression, MutableMapping):
         super().__init__()
         self._data = dict()
 
-    def __setitem__(self, key: Union[str, Expression], value: Expression) -> None:
+    def __setitem__(self, key: Union[str, CompoundExpression], value: CompoundExpression) -> None:
         """
         Keynames that are reserved and, therefore, cannot be used: error, false, is,
             isnt, parent, true, undefined
@@ -39,10 +39,10 @@ class ClassAd(Expression, MutableMapping):
             raise ValueError(f"{key} is a reserved name")
         self._data[key] = value
 
-    def __delitem__(self, key: Union[str, Expression]) -> None:
+    def __delitem__(self, key: Union[str, CompoundExpression]) -> None:
         self._data.pop(key, None)
 
-    def __getitem__(self, key: Iterable[Union[str, Expression]]) -> Expression:
+    def __getitem__(self, key: Iterable[Union[str, CompoundExpression]]) -> CompoundExpression:
         if isinstance(key, str):
             key = [key]
         expression = self._data
@@ -62,7 +62,7 @@ class ClassAd(Expression, MutableMapping):
 
     def _evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
@@ -90,7 +90,7 @@ class ClassAd(Expression, MutableMapping):
         return f"<{self.__class__.__name__}>: {self._data}"
 
 
-class NamedExpression(Expression):
+class NamedExpression(CompoundExpression):
     __slots__ = '_expression',
 
     @classmethod
@@ -102,7 +102,7 @@ class NamedExpression(Expression):
         return result
 
 
-class FunctionExpression(Expression):
+class FunctionExpression(CompoundExpression):
     __slots__ = '_expression', '_name'
 
     def __init__(self, name, args):
@@ -119,7 +119,7 @@ class FunctionExpression(Expression):
 
     def _evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
@@ -136,12 +136,12 @@ class FunctionExpression(Expression):
         return f"<{self.__class__.__name__}>: {self._name}{self._expression}"
 
 
-class TernaryExpression(Expression):
+class TernaryExpression(CompoundExpression):
     __slots__ = '_expression',
 
     def _evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
@@ -162,12 +162,12 @@ class TernaryExpression(Expression):
         return Error()
 
 
-class DotExpression(Expression):
+class DotExpression(CompoundExpression):
     __slots__ = '_expression',
 
     def _evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
@@ -195,12 +195,12 @@ class DotExpression(Expression):
         return to_check
 
 
-class SubscriptableExpression(Expression):
+class SubscriptableExpression(CompoundExpression):
     __slots__ = '_expression',
 
     def _evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
@@ -209,12 +209,12 @@ class SubscriptableExpression(Expression):
         return operand[index]._evaluate(key=key, my=my, target=target)
 
 
-class AttributeExpression(Expression):
+class AttributeExpression(CompoundExpression):
     __slots__ = '_expression',
 
     def _evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
@@ -271,14 +271,14 @@ class AttributeExpression(Expression):
         return result
 
 
-class UnaryExpression(Expression):
+class UnaryExpression(CompoundExpression):
     __slots__ = '_expression',
 
     operator_map = {"-": None, "!": not_operator}
 
     def _evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ):
@@ -286,7 +286,7 @@ class UnaryExpression(Expression):
         return self.operator_map[self._expression[0]](operand)
 
 
-class ArithmeticExpression(Expression):
+class ArithmeticExpression(CompoundExpression):
     __slots__ = '_expression',
 
     operator_map = {
@@ -329,7 +329,7 @@ class ArithmeticExpression(Expression):
 
     def _evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ):
