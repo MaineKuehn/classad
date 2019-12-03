@@ -2,7 +2,7 @@ import operator
 from collections import MutableMapping
 
 import pyparsing as pp
-from typing import Any, Iterable, List, Iterator, Optional, Union, Tuple
+from typing import Iterable, List, Iterator, Optional, Union, Tuple
 
 from classad._operator import eq_operator, ne_operator, not_operator
 from classad._primitives import Error, Undefined, HTCBool
