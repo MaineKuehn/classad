@@ -32,7 +32,7 @@ class Expression:
 
 
 class CompoundExpression(Expression):
-    __slots__ = '_expression'
+    __slots__ = "_expression"
 
     _expression: Tuple[Expression, ...]
 

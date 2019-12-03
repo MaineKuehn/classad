@@ -10,6 +10,7 @@ class Undefined(PrimitiveExpression):
     """
     The keyword ``UNDEFINED`` (case insensitive) represents the ``UNDEFINED`` value.
     """
+
     __slots__ = ()
 
     def __bool__(self):
@@ -67,6 +68,7 @@ class Error(PrimitiveExpression):
     """
     The keyword ``ERROR`` (case insensitive) represents the ``ERROR`` value.
     """
+
     __slots__ = ()
 
     def __bool__(self):
@@ -314,7 +316,7 @@ class HTCFloat(float, PrimitiveExpression):
 
 
 class HTCBool(PrimitiveExpression):
-    __slots__ = '_value',
+    __slots__ = ("_value",)
 
     def __init__(self, x):
         super().__init__()

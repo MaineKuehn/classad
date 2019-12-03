@@ -26,7 +26,9 @@ class ClassAd(CompoundExpression, MutableMapping):
         super().__init__()
         self._data = dict()
 
-    def __setitem__(self, key: Union[str, CompoundExpression], value: Expression) -> None:
+    def __setitem__(
+        self, key: Union[str, CompoundExpression], value: Expression
+    ) -> None:
         """
         Keynames that are reserved and, therefore, cannot be used: error, false, is,
             isnt, parent, true, undefined
@@ -103,7 +105,7 @@ class NamedExpression(CompoundExpression):
 
 
 class FunctionExpression(CompoundExpression):
-    __slots__ = '_name',
+    __slots__ = ("_name",)
 
     def __init__(self, name: str, args: Tuple[Expression, ...]):
         super().__init__()

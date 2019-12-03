@@ -250,7 +250,9 @@ expression << pp.Group(
             arithmetic_expression,
         )
     )
-).setParseAction(lambda s, l, t: CompoundExpression.from_grammar(t[0])).setName("expression")
+).setParseAction(lambda s, l, t: CompoundExpression.from_grammar(t[0])).setName(
+    "expression"
+)
 
 
 def parse(content: str):
