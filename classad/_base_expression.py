@@ -1,6 +1,6 @@
 import pyparsing as pp
 
-from typing import Iterable, Any, TYPE_CHECKING, Union, Optional
+from typing import Iterable, Any, TYPE_CHECKING, Union, Optional, Tuple
 
 if TYPE_CHECKING:
     from ._expression import ClassAd
@@ -8,21 +8,47 @@ if TYPE_CHECKING:
 
 
 class Expression:
-    _expression: "Expression"
+    __slots__ = ()
 
     def evaluate(
         self,
-        key: "Optional[Iterable[Union[str, Expression]]]" = None,
+        key: "Optional[Iterable[Union[str, CompoundExpression]]]" = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
-    ) -> Any:
+    ) -> "Expression":
+        raise NotImplementedError
+
+    def _evaluate(
+        self,
+        key: "Optional[Iterable[Union[str, CompoundExpression]]]" = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
+    ) -> "Expression":
+        raise NotImplementedError
+
+    @classmethod
+    def from_grammar(cls, tokens):
+        raise NotImplementedError
+
+
+class CompoundExpression(Expression):
+    __slots__ = "_expression"
+
+    _expression: Tuple[Expression, ...]
+
+    def evaluate(
+        self,
+        key: "Optional[Iterable[Union[str, CompoundExpression]]]" = None,
+        my: "Optional[ClassAd]" = None,
+        target: "Optional[ClassAd]" = None,
+    ) -> "Expression":
         if isinstance(key, str):
             key = key.split(".")
         return self._evaluate(key=key, my=my, target=target)
 
     def _evaluate(
         self,
-        key: "Optional[Iterable[Union[str, Expression]]]" = None,
+        key: "Optional[Iterable[Union[str, CompoundExpression]]]" = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
     ) -> Any:
@@ -53,20 +79,22 @@ class Expression:
 
 
 class PrimitiveExpression(Expression):
+    __slots__ = ()
+
     def evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
-    ) -> Any:
+    ) -> "Expression":
         return self
 
     def _evaluate(
         self,
-        key: Optional[Iterable[Union[str, Expression]]] = None,
+        key: Optional[Iterable[Union[str, CompoundExpression]]] = None,
         my: "Optional[ClassAd]" = None,
         target: "Optional[ClassAd]" = None,
-    ) -> Any:
+    ) -> "Expression":
         return self
 
     def __htc_eq__(
