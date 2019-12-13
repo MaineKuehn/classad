@@ -549,8 +549,18 @@ def substr(
 
     This function returns :py:class:`~.Error` if greater than ``3`` or less than
     ``2`` arguments are given.
+
+    .. TODO:: Check how substr on int and float is defined
+
     """
-    raise NotImplementedError
+    try:
+        return (
+            HTCStr(s[offset : offset + length])  # noqa: E203
+            if length is not None and length > 0
+            else HTCStr(s[offset:])
+        )
+    except TypeError:
+        return Error()
 
 
 def strcmp(a: literal_type, b: literal_type) -> Union[HTCInt, Error]:
