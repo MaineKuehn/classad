@@ -229,6 +229,9 @@ class HTCInt(int, PrimitiveExpression):
     def __repr__(self):
         return f"<{self.__class__.__name__}>: {self}"
 
+    def __hash__(self):
+        return super().__hash__()
+
 
 class HTCList(tuple, PrimitiveExpression):
     __slots__ = ()
@@ -238,6 +241,9 @@ class HTCList(tuple, PrimitiveExpression):
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>: {[element for element in self]}"
+
+    def __hash__(self):
+        return super().__hash__()
 
 
 class HTCStr(str, PrimitiveExpression):
@@ -273,6 +279,9 @@ class HTCStr(str, PrimitiveExpression):
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>: {self}"
+
+    def __hash__(self):
+        return super().__hash__()
 
 
 class HTCFloat(float, PrimitiveExpression):
@@ -319,6 +328,9 @@ class HTCFloat(float, PrimitiveExpression):
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>: {self}"
+
+    def __hash__(self):
+        return super().__hash__()
 
 
 class HTCBool(PrimitiveExpression):
@@ -383,3 +395,6 @@ class HTCBool(PrimitiveExpression):
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>: {self._value}"
+
+    def __hash__(self):
+        return hash(self._value)
