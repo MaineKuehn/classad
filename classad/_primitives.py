@@ -242,9 +242,6 @@ class HTCList(tuple, PrimitiveExpression):
     def __repr__(self):
         return f"<{self.__class__.__name__}>: {[element for element in self]}"
 
-    def __hash__(self):
-        return super().__hash__()
-
 
 class HTCStr(str, PrimitiveExpression):
     __slots__ = ()
