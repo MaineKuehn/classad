@@ -64,10 +64,13 @@ def test_numbers(num_type):
 
 def test_hashable():
     test = set()
-    test.add(Undefined())
-    test.add(Error())
-    test.add(HTCInt(1))
-    test.add(HTCFloat(0.0))
-    test.add(HTCStr("test"))
-    test.add(HTCBool(True))
+    try:
+        test.add(Undefined())
+        test.add(Error())
+        test.add(HTCInt(1))
+        test.add(HTCFloat(0.0))
+        test.add(HTCStr("test"))
+        test.add(HTCBool(True))
+    except TypeError:
+        pytest.fail("Hashing not supported")
     assert len(test) == 6
