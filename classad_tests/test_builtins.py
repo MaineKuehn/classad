@@ -8,8 +8,8 @@ from classad._primitives import (
     HTCInt,
     HTCFloat,
     # HTCList,
-    # HTCStr,
     HTCBool,
+    HTCStr,
 )
 from classad._operator import eq_operator, ne_operator
 
@@ -60,3 +60,17 @@ def test_numbers(num_type):
             assert_similar(operation, HTCBool(False), num_type, value)
             assert_similar(operation, Error(), num_type, value)
             assert_similar(operation, Undefined(), num_type, value)
+
+
+def test_hashable():
+    test = set()
+    try:
+        test.add(Undefined())
+        test.add(Error())
+        test.add(HTCInt(1))
+        test.add(HTCFloat(0.0))
+        test.add(HTCStr("test"))
+        test.add(HTCBool(True))
+    except TypeError:
+        pytest.fail("Hashing not supported")
+    assert len(test) == 6
