@@ -232,18 +232,21 @@ class AttributeExpression(CompoundExpression):
             the_key = scope_up(self._expression[1])
             expression = self._expression[1][-1]
         elif self._expression[0] == "target":
-            if my is None or target is None:
+            if target is None:
                 return Undefined()
             selected_classad = target
             expression = self._expression[1]
         elif self._expression[0] == "my":
-            if my is None or target is None:
+            if my is None:
                 return Undefined()
-            expression = self._expression
+            expression = self._expression[1]
         else:
             expression = self._expression
         try:
-            context = find_scope(the_key, classad=selected_classad)
+            if the_key is None and selected_classad is not None:
+                context = selected_classad
+            else:
+                context = find_scope(the_key, classad=selected_classad)
         except TypeError:
             return Error()
         while isinstance(value, Undefined):
