@@ -1,0 +1,8 @@
+category: added
+summary: "Evaluation of expression in context of classad"
+description: |
+  The project can now evaluate an expression in the context of a classads.
+issues:
+  - 17
+pull requests:
+  - 18
