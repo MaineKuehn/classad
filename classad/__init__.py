@@ -1,4 +1,5 @@
 """Python package to parse and interpret HTCondor classads"""
+from ._base_expression import Expression, PrimitiveExpression
 from ._functions import (  # noqa: F401
     eval,
     unparse,
@@ -52,6 +53,8 @@ from ._functions import (  # noqa: F401
 from ._grammar import parse  # noqa: F401
 
 __all__ = [
+    "Expression",
+    "PrimitiveExpression",
     "eval",
     "unparse",
     "ifThenElse",
