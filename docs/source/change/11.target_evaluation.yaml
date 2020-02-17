@@ -5,6 +5,7 @@ description: |
   of :py:class:`~.AttributeExpression`s implements the evaluation of the
   :py:class:`~.NamedExpression` *target*.
 issues:
-  - 9
+- 9
 pull requests:
-  - 11
+- 11
+version: 0.3.0
