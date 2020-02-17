@@ -4,4 +4,5 @@ description: |
   So far, the primitives including `Undefined`, `Error`, `HTCInt`, `HTCFloat`,
   `HTCBool` and `HTCStr` did not implement `__hash__`. This was added.
 pull requests:
-  - 16
+- 16
+version: 0.3.0
