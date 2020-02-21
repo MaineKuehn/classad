@@ -219,6 +219,7 @@ class TestGrammar(object):
         assert parse("-1.0").evaluate() == HTCFloat(-1.0)
         assert parse("-'test'").evaluate() == Error()
         assert parse("-1 * 2.0").evaluate() == HTCFloat(-2)
+        assert parse("-Error").evaluate() == Error()
 
     def test_ternary(self):
         assert parse("true?10:undefined").evaluate() == HTCInt(10)
