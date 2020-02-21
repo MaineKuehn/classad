@@ -1,9 +1,17 @@
-.. Created by log.py at 2020-02-17, command
+.. Created by log.py at 2020-02-21, command
    '/Users/eileenwork/development/work/classad/venv/lib/python3.7/site-packages/change/__main__.py log docs/source/change compile --output docs/source/changelog.rst'
    based on the format of 'https://keepachangelog.com/'
 #########
 ChangeLog
 #########
+
+Upcoming
+========
+
+Version [Unreleased] - 2020-02-21
++++++++++++++++++++++++++++++++++
+
+* **[Added]** Negation for unary operation
 
 0.3 Series
 ==========
