@@ -5,11 +5,11 @@
 ChangeLog
 #########
 
-Upcoming
-========
+0.4 Series
+==========
 
-Version [Unreleased] - 2020-02-21
-+++++++++++++++++++++++++++++++++
+Version [0.4.0] - 2020-02-21
+++++++++++++++++++++++++++++
 
 * **[Added]** Negation for unary operation
 
