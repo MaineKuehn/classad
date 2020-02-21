@@ -1,0 +1,6 @@
+category: added
+summary: "Negation for unary operation"
+description: |
+  Classads now also support negation in unary operations.
+pull requests:
+- 21

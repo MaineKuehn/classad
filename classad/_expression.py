@@ -4,7 +4,7 @@ from collections import MutableMapping
 import pyparsing as pp
 from typing import Iterable, List, Iterator, Optional, Union, Tuple
 
-from classad._operator import eq_operator, ne_operator, not_operator
+from classad._operator import eq_operator, ne_operator, not_operator, neg_operator
 from classad._primitives import Error, Undefined, HTCBool
 from ._base_expression import CompoundExpression, Expression
 from . import _functions
@@ -297,7 +297,7 @@ class AttributeExpression(CompoundExpression):
 class UnaryExpression(CompoundExpression):
     __slots__ = ()
 
-    operator_map = {"-": None, "!": not_operator}
+    operator_map = {"-": neg_operator, "!": not_operator}
 
     def _evaluate(
         self,

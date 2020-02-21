@@ -1,7 +1,7 @@
 from typing import Union
 
 from classad._base_expression import PrimitiveExpression
-from classad._primitives import HTCBool, Undefined, Error
+from classad._primitives import HTCBool, Undefined, Error, HTCInt, HTCFloat
 
 
 def eq_operator(
@@ -58,3 +58,18 @@ def not_operator(a: PrimitiveExpression) -> Union[HTCBool, Undefined, Error]:
         parse("!False").evaluate()  # result: HTCBool(True)
     """
     return a.__htc_not__()
+
+
+def neg_operator(a: PrimitiveExpression) -> Union[HTCInt, HTCFloat, Undefined, Error]:
+    """
+    Negation operator as defined by classad specification.
+
+    .. code:: python3
+        parse("-1").evaluate()  # result: HTCInt(-1)
+    """
+    result = -1 * a
+    if isinstance(result, int):
+        return HTCInt(result)
+    elif isinstance(result, float):
+        return HTCFloat(result)
+    return Error()

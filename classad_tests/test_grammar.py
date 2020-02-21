@@ -214,6 +214,13 @@ class TestGrammar(object):
         assert parse("!'test'").evaluate() == Error()
         assert not parse("[a=True;b=!a]").evaluate("b")
 
+    def test_negation(self):
+        assert parse("-1").evaluate() == HTCInt(-1)
+        assert parse("-1.0").evaluate() == HTCFloat(-1.0)
+        assert parse("-'test'").evaluate() == Error()
+        assert parse("-1 * 2.0").evaluate() == HTCFloat(-2)
+        assert parse("-Error").evaluate() == Error()
+
     def test_ternary(self):
         assert parse("true?10:undefined").evaluate() == HTCInt(10)
         assert parse('false?error:"foo"').evaluate() == HTCStr("foo")
