@@ -11,7 +11,7 @@ description-file = "README.rst"
 keywords = "htcondor classad python"
 classifiers = ["License :: OSI Approved :: MIT License"]
 requires = [
-    "pyparsing"
+    "pyparsing >= 2.4.1"
 ]
 
 [tool.flit.metadata.requires-extra]
