@@ -214,12 +214,12 @@ suffix_expression << pp.MatchFirst(
 ).setName("suffix_expression")
 
 
-def binary_parse_action(s, l, t):
-    return ArithmeticExpression.from_grammar(t[0])
+def binary_parse_action(orig_parse_string, location, tokens):
+    return ArithmeticExpression.from_grammar(tokens[0])
 
 
-def unary_parse_action(s, l, t):
-    return UnaryExpression.from_grammar(t[0])
+def unary_parse_action(orig_parse_string, location, tokens):
+    return UnaryExpression.from_grammar(tokens[0])
 
 
 # unary operators: + - ~ !
